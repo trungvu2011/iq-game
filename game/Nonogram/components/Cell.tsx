@@ -10,7 +10,6 @@ interface CellProps {
     isComplete: boolean;
     colorValue?: number[];
     onPress?: () => void;
-    onCellLayout: (row: number, col: number, pageX: number, pageY: number, width: number, height: number) => void;
 }
 
 const Cell = ({
@@ -20,8 +19,7 @@ const Cell = ({
     cellSize,
     isComplete,
     colorValue,
-    onPress,
-    onCellLayout
+    onPress
 }: CellProps) => {
     let backgroundColor = '#F8F8F8';
     let borderColor = '#CCCCCC';
@@ -89,11 +87,6 @@ const Cell = ({
                         height: cellSize,
                     },
                 ]}
-                onLayout={(event) => {
-                    event.target.measure((_, __, cellWidth, cellHeight, pageX, pageY) => {
-                        onCellLayout(row, col, pageX, pageY, cellWidth, cellHeight);
-                    });
-                }}
             >
                 {content}
             </View>

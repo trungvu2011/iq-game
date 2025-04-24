@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { CELL_STATES, GAME_STATUS, MARK_MODES } from '../constants/gameConstants';
-import { NonogramLevel, CellPosition, WrongCell } from '../types';
+import { NonogramLevel, CellPosition, WrongCell, GridLayout } from '../types';
 
 export const useNonogramGame = (levels: NonogramLevel[]) => {
     // State variables
-    const [level, setLevel] = useState(0);
+    const [level, setLevel] = useState(180);
     const [renderKey, setRenderKey] = useState(0);
     const [lives, setLives] = useState(3);
     const [gameStatus, setGameStatus] = useState(GAME_STATUS.PLAYING);
@@ -17,7 +17,7 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
 
     // Refs
     const wrongCellsTimerRef = useRef<NodeJS.Timeout | null>(null);
-    const cellPositionsRef = useRef<{ [key: string]: CellPosition }>({});
+    const gridLayoutRef = useRef<GridLayout | null>(null);
 
     // Get current puzzle
     const puzzle = levels[level]?.nonogrid || [];
@@ -59,25 +59,38 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         }
 
         setIsComplete(correct);
+
+        // Nếu đã hoàn thành, cập nhật trạng thái game
+        if (correct) {
+            setGameStatus(GAME_STATUS.COMPLETED);
+        }
     }, [solution, puzzle]);
 
     // Tìm ô tại vị trí
     const findCellAtPosition = useCallback((pageX: number, pageY: number): CellPosition | null => {
-        for (const key in cellPositionsRef.current) {
-            const cell = cellPositionsRef.current[key];
-            const layout = cell.layout;
+        const grid = gridLayoutRef.current;
+        if (!grid || !grid.layout) return null;
 
-            if (layout) {
-                if (
-                    pageX >= layout.x &&
-                    pageX <= layout.x + layout.width &&
-                    pageY >= layout.y &&
-                    pageY <= layout.y + layout.height
-                ) {
-                    return cell;
-                }
-            }
+        const { layout, cellSize, topOffset, leftOffset } = grid;
+
+        // Kiểm tra xem vị trí có nằm trong lưới không
+        if (pageX < layout.x || pageX > layout.x + layout.width ||
+            pageY < layout.y || pageY > layout.y + layout.height) {
+            return null;
         }
+
+        // Tính toán hàng và cột dựa trên vị trí
+        const relativeX = pageX - layout.x - leftOffset;
+        const relativeY = pageY - layout.y - topOffset;
+
+        const col = Math.floor(relativeX / cellSize);
+        const row = Math.floor(relativeY / cellSize);
+
+        // Kiểm tra xem hàng và cột có hợp lệ không
+        if (row >= 0 && row < puzzle.length && col >= 0 && col < puzzle[0].length) {
+            return { row, col };
+        }
+
         return null;
     }, []);
 
@@ -138,93 +151,29 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
     }, [puzzle, rowHints, colHints]);
 
     // Điền các ô bị bỏ qua khi vuốt nhanh
-    const fillSkippedCells = useCallback((startCell: CellPosition, endCell: CellPosition) => {
-        if (!startCell || !endCell) return;
+    const fillSkippedCells = useCallback(
+        (start: { row: number; col: number }, end: { row: number; col: number }, toggleCell: (row: number, col: number) => void) => {
+            const dRow = end.row - start.row;
+            const dCol = end.col - start.col;
 
-        const { row: startRow, col: startCol } = startCell;
-        const { row: endRow, col: endCol } = endCell;
+            const steps = Math.max(Math.abs(dRow), Math.abs(dCol));
+            const stepRow = dRow / steps;
+            const stepCol = dCol / steps;
 
-        if (Math.abs(startRow - endRow) <= 1 && Math.abs(startCol - endCol) <= 1) {
-            return;
-        }
+            for (let i = 1; i <= steps; i++) {
+                const row = Math.round(start.row + stepRow * i);
+                const col = Math.round(start.col + stepCol * i);
 
-        const deltaRow = Math.abs(endRow - startRow);
-        const deltaCol = Math.abs(endCol - startCol);
-        const signRow = startRow < endRow ? 1 : -1;
-        const signCol = startCol < endCol ? 1 : -1;
-
-        const newSolution = [...solution];
-        // Biến đếm số ô sai để trừ mạng chính xác
-        let wrongCellCount = 0;
-
-        let error = deltaCol - deltaRow;
-        let currentRow = startRow;
-        let currentCol = startCol;
-
-        // Thuật toán Bresenham để vẽ đường thẳng
-        while (currentRow !== endRow || currentCol !== endCol) {
-            const doubleError = error * 2;
-
-            if (doubleError > -deltaRow) {
-                error -= deltaRow;
-                currentCol += signCol;
-            }
-
-            if (doubleError < deltaCol) {
-                error += deltaCol;
-                currentRow += signRow;
-            }
-
-            // Kiểm tra xem ô có hợp lệ không và cập nhật
-            if (currentRow >= 0 && currentRow < puzzle.length &&
-                currentCol >= 0 && currentCol < puzzle[0].length) {
-
-                // Xử lý cho từng ô riêng biệt
-                let isWrongMove = false;
-
-                // Trường hợp 1: Chế độ tô đen
-                if (markMode === MARK_MODES.FILL) {
-                    if (puzzle[currentRow][currentCol] === 1) {
-                        // Đúng: Ô này nên tô đen
-                        newSolution[currentRow][currentCol] = CELL_STATES.FILLED;
-                    } else {
-                        // Sai: Ô này không nên tô đen
-                        newSolution[currentRow][currentCol] = CELL_STATES.MARKED_WRONG;
-                        isWrongMove = true;
-                        wrongCellCount++;
-                    }
-                }
-                // Trường hợp 2: Chế độ đánh X
-                else {
-                    if (puzzle[currentRow][currentCol] === 0) {
-                        // Đúng: Ô này nên đánh X
-                        newSolution[currentRow][currentCol] = CELL_STATES.MARKED;
-                    } else {
-                        // Sai: Ô này không nên đánh X
-                        newSolution[currentRow][currentCol] = CELL_STATES.FILLED_WRONG;
-                        isWrongMove = true;
-                        wrongCellCount++;
-                    }
+                if (
+                    row >= 0 && row < puzzle.length &&
+                    col >= 0 && col < puzzle[0].length
+                ) {
+                    toggleCell(row, col);
                 }
             }
-        }
+        }, [puzzle]
+    );
 
-        // Cập nhật solution
-        setSolution(newSolution);
-
-        // Trừ mạng dựa vào số ô sai
-        if (wrongCellCount > 0) {
-            const newLives = Math.max(0, lives - wrongCellCount);
-            setLives(newLives);
-
-            // Kiểm tra nếu hết mạng thì game over
-            if (newLives <= 0) {
-                setGameStatus(GAME_STATUS.FAILED);
-            }
-        }
-
-        return newSolution;
-    }, [puzzle, solution, lives, markMode]);
 
     // Xử lý khi người chơi chọn sai ô
     const handleWrongCell = useCallback((row: number, col: number) => {
@@ -267,9 +216,15 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
     }, [lives, puzzle, solution, wrongCells]);
 
     // Toggle cell state based on current mark mode
-    const toggleCell = useCallback((row: number, col: number) => {
+    const toggleCell = useCallback((row: number, col: number, mode: any) => {
         if (isComplete || gameStatus === GAME_STATUS.FAILED) {
             return;
+        }
+
+        // Kiểm tra nếu ô đã được đánh dấu rồi thì không thay đổi nữa
+        const currentState = solution[row][col];
+        if (currentState === CELL_STATES.FILLED || currentState === CELL_STATES.MARKED) {
+            return; // Không thay đổi ô đã đánh dấu
         }
 
         const newSolution = [...solution];
@@ -278,9 +233,7 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         if (markMode === MARK_MODES.FILL) {
             if (puzzle[row][col] === 1) {
                 // Đúng: Ô này nên tô đen - chuyển đổi giữa empty và filled
-                newSolution[row][col] = newSolution[row][col] === CELL_STATES.FILLED
-                    ? CELL_STATES.EMPTY
-                    : CELL_STATES.FILLED;
+                newSolution[row][col] = CELL_STATES.FILLED;
             } else {
                 // Sai: Ô này không nên tô đen
                 newSolution[row][col] = CELL_STATES.MARKED_WRONG;
@@ -292,9 +245,7 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         else {
             if (puzzle[row][col] === 0) {
                 // Đúng: Ô này nên đánh X - chuyển đổi giữa empty và marked
-                newSolution[row][col] = newSolution[row][col] === CELL_STATES.MARKED
-                    ? CELL_STATES.EMPTY
-                    : CELL_STATES.MARKED;
+                newSolution[row][col] = CELL_STATES.MARKED;
             } else {
                 // Sai: Ô này không nên đánh X
                 newSolution[row][col] = CELL_STATES.FILLED_WRONG;
@@ -308,11 +259,11 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
 
         // Kiểm tra và tự động đánh dấu X sau khi cập nhật ô
         autoMarkCompletedLines(newSolution, row, col);
-    }, [solution, puzzle, markMode, isComplete, gameStatus, handleWrongCell, autoMarkCompletedLines]);
+    }, [solution, puzzle, markMode, gameStatus, handleWrongCell, autoMarkCompletedLines]);
 
     // Hàm để cung cấp gợi ý
     const giveHint = useCallback(() => {
-        if (hintsRemaining <= 0 || isComplete || gameStatus === GAME_STATUS.FAILED) {
+        if (hintsRemaining <= 0 || gameStatus === GAME_STATUS.FAILED) {
             return;
         }
 
@@ -363,33 +314,44 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         setHintsRemaining(3);
         setGameStatus(GAME_STATUS.PLAYING);
         setRenderKey(prev => prev + 1);
-        cellPositionsRef.current = {};
+        gridLayoutRef.current = {
+            layout: { x: 0, y: 0, width: 0, height: 0 },
+            cellSize: 0,
+            topOffset: 0,
+            leftOffset: 0
+        }
     }, [level, levels]);
 
     // Reset level
     const resetLevel = useCallback(() => {
-        setSolution(Array(puzzle.length).fill(null).map(() =>
-            Array(puzzle[0].length).fill(CELL_STATES.EMPTY)
-        ));
+        // Clear wrong cells timer if it exists
+        if (wrongCellsTimerRef.current) {
+            clearTimeout(wrongCellsTimerRef.current);
+            wrongCellsTimerRef.current = null;
+        }
+        
+        // Clear wrong cells list
+        setWrongCells([]);
+        
+        const rows = puzzle.length;
+        const cols = puzzle[0]?.length || 0;
+
+        const emptySolution = Array.from({ length: rows }, () =>
+            Array(cols).fill(CELL_STATES.EMPTY)
+        );
+
+        setSolution(emptySolution);
         setIsComplete(false);
         setLives(3);
         setHintsRemaining(3);
         setGameStatus(GAME_STATUS.PLAYING);
+        setRenderKey(prev => prev + 1);
     }, [puzzle]);
 
-    // Lưu vị trí ô
-    const saveCellPosition = useCallback((row: number, col: number, layout: { x: number, y: number, width: number, height: number }) => {
-        const cellKey = `${row}-${col}`;
-        cellPositionsRef.current[cellKey] = {
-            row,
-            col,
-            layout: {
-                x: layout.x,
-                y: layout.y,
-                width: layout.width,
-                height: layout.height,
-            }
-        };
+
+    // Lưu vị trí grid
+    const saveGridLayout = useCallback((layout: GridLayout) => {
+        gridLayoutRef.current = layout;
     }, []);
 
     return {
@@ -408,7 +370,7 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         lastToggledCell,
         currentMarkValue,
         wrongCells,
-        cellPositionsRef,
+        gridLayoutRef,
         setLastToggledCell,
         setCurrentMarkValue,
         findCellAtPosition,
@@ -419,6 +381,6 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
         goToNextLevel,
         resetLevel,
         setMarkMode,
-        saveCellPosition
+        saveGridLayout
     };
 };

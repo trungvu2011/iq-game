@@ -9,7 +9,6 @@ interface GameControlsProps {
     resetLevel: () => void;
     giveHint: () => void;
     hintsRemaining: number;
-    isComplete: boolean;
     gameStatus: number;
 }
 
@@ -19,7 +18,6 @@ const GameControls = ({
     resetLevel,
     giveHint,
     hintsRemaining,
-    isComplete,
     gameStatus
 }: GameControlsProps) => {
     return (
@@ -40,7 +38,7 @@ const GameControls = ({
                         { backgroundColor: hintsRemaining > 0 ? '#4A6572' : '#9E9E9E' }
                     ]}
                     onPress={giveHint}
-                    disabled={hintsRemaining <= 0 || isComplete || gameStatus === GAME_STATUS.FAILED}
+                    disabled={hintsRemaining <= 0 || gameStatus === GAME_STATUS.FAILED}
                 >
                     <Text style={styles.buttonText}>Gợi ý ({hintsRemaining})</Text>
                 </TouchableOpacity>

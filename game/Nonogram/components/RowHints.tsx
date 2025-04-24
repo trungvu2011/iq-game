@@ -15,13 +15,19 @@ const RowHints = ({ hints, cellSize, hintFontSize }: RowHintsProps) => {
                     key={`row-hint-${rowIndex}`}
                     style={[
                         styles.rowHint,
-                        { width: cellSize * 1.5, height: cellSize },
+                        { width: cellSize * 1.5, height: cellSize - 2 },
                     ]}
                 >
                     {rowHint.map((hint, i) => (
                         <Text
                             key={`row-hint-${rowIndex}-${i}`}
-                            style={[styles.hintText, { fontSize: hintFontSize }]}
+                            style={[
+                                styles.hintText,
+                                {
+                                    fontSize: hintFontSize,
+                                    marginRight: i < rowHint.length - 1 ? 6 : 0
+                                }
+                            ]}
                         >
                             {hint}
                         </Text>
@@ -45,7 +51,7 @@ const styles = StyleSheet.create({
     hintText: {
         fontWeight: 'bold',
         color: '#37474F',
-        marginHorizontal: 2,
+        marginHorizontal: 0,
     },
 });
 

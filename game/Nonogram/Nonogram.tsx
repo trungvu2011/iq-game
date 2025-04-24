@@ -19,7 +19,6 @@ const Nonogram = () => {
         lives,
         gameStatus,
         hintsRemaining,
-        isComplete,
         markMode,
         puzzle,
         colorGrid,
@@ -41,6 +40,7 @@ const Nonogram = () => {
 
     // Sử dụng custom hook để xử lý thao tác vuốt
     const panResponder = usePanGesture(gameState);
+    console.log('Game Status:', gameStatus);
 
     return (
         <SafeAreaView style={styles.container} key={renderKey}>
@@ -52,20 +52,6 @@ const Nonogram = () => {
                 totalLevels={nonogramLevels.length}
             />
 
-            {gameStatus === GAME_STATUS.FAILED && (
-                <GameStatusBanner
-                    status="failed"
-                    onButtonPress={resetLevel}
-                />
-            )}
-
-            {isComplete && (
-                <GameStatusBanner
-                    status="completed"
-                    title={nonogramLevels[level].title}
-                    onButtonPress={goToNextLevel}
-                />
-            )}
 
             <Grid
                 puzzle={puzzle}
@@ -77,15 +63,31 @@ const Nonogram = () => {
                 panResponderHandlers={panResponder.panHandlers}
             />
 
-            <GameControls
-                markMode={markMode}
-                setMarkMode={setMarkMode}
-                resetLevel={resetLevel}
-                giveHint={giveHint}
-                hintsRemaining={hintsRemaining}
-                isComplete={isComplete}
-                gameStatus={gameStatus}
-            />
+            {gameStatus === GAME_STATUS.FAILED && (
+                <GameStatusBanner
+                    status="failed"
+                    onButtonPress={resetLevel}
+                />
+            )}
+
+            {gameStatus === GAME_STATUS.COMPLETED && (
+                <GameStatusBanner
+                    status="completed"
+                    title={nonogramLevels[level].title}
+                    onButtonPress={goToNextLevel}
+                />
+            )}
+
+            {gameStatus == GAME_STATUS.PLAYING &&
+                <GameControls
+                    markMode={markMode}
+                    setMarkMode={setMarkMode}
+                    resetLevel={resetLevel}
+                    giveHint={giveHint}
+                    hintsRemaining={hintsRemaining}
+                    gameStatus={gameStatus}
+                />
+            }
         </SafeAreaView>
     );
 };
@@ -95,7 +97,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#F5F5F5',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        paddingTop: 10,
     },
 });
 

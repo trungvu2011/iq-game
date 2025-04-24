@@ -7,7 +7,6 @@ import { CELL_STATES, GAME_STATUS } from '../constants/gameConstants';
  */
 export const usePanGesture = (gameState: any) => {
     const {
-        isComplete,
         gameStatus,
         markMode,
         puzzle,
@@ -29,7 +28,7 @@ export const usePanGesture = (gameState: any) => {
             onMoveShouldSetPanResponder: () => true,
 
             onPanResponderGrant: (evt, _gestureState) => {
-                if (isComplete || gameStatus === GAME_STATUS.FAILED) {
+                if (gameStatus === GAME_STATUS.FAILED) {
                     return;
                 }
 
@@ -45,9 +44,7 @@ export const usePanGesture = (gameState: any) => {
             },
 
             onPanResponderMove: (evt, _gestureState) => {
-                if (isComplete || gameStatus === GAME_STATUS.FAILED) {
-                    return;
-                }
+                if (gameStatus === GAME_STATUS.FAILED) return;
 
                 const { pageX, pageY } = evt.nativeEvent;
                 const cellTouched = findCellAtPosition(pageX, pageY);
@@ -55,21 +52,24 @@ export const usePanGesture = (gameState: any) => {
                 if (cellTouched && lastToggledCell) {
                     const { row, col } = cellTouched;
 
-                    // Chỉ xử lý nếu đã chuyển sang ô mới
+                    // // Cập nhật các ô đã bỏ qua
+                    fillSkippedCells(lastToggledCell, { row, col }, toggleCell);
+
+                    // Chỉ xử lý nếu đang vuốt sang ô khác
                     if (lastToggledCell.row !== row || lastToggledCell.col !== col) {
-                        // Điền các ô bị bỏ qua khi vuốt nhanh
-                        const newSolution = fillSkippedCells(lastToggledCell, cellTouched);
+                        toggleCell(row, col);
 
-                        // Kiểm tra và tự động đánh dấu X cho các ô hoàn thành
-                        if (newSolution) {
-                            autoMarkCompletedLines(newSolution, row, col);
-                        }
-
-                        // Cập nhật ô cuối cùng được chạm
+                        // Cập nhật lại ô cuối cùng đã xử lý
                         setLastToggledCell({ row, col });
+
+                        // Tự động đánh dấu dòng hoàn thành
+                        if (solution) {
+                            autoMarkCompletedLines(solution, row, col);
+                        }
                     }
                 }
             },
+
 
             onPanResponderRelease: (_evt, _gestureState) => {
                 if (lastToggledCell) {
@@ -84,7 +84,6 @@ export const usePanGesture = (gameState: any) => {
             },
         }),
         [
-            isComplete,
             gameStatus,
             markMode,
             puzzle,

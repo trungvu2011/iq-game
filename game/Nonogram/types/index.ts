@@ -4,7 +4,13 @@ import { LayoutRectangle } from 'react-native';
 export interface CellPosition {
     row: number;
     col: number;
-    layout?: LayoutRectangle;
+}
+
+export interface GridLayout {
+    layout: LayoutRectangle;
+    cellSize: number;
+    topOffset: number;
+    leftOffset: number;
 }
 
 // Cấu trúc dữ liệu level từ file JSON

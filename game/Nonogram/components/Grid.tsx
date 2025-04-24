@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, StyleSheet, GestureResponderHandlers } from 'react-native';
+import React, { useRef } from 'react';
+import { View, StyleSheet, GestureResponderHandlers, LayoutChangeEvent } from 'react-native';
 import Cell from './Cell';
 import RowHints from './RowHints';
 import ColumnHints from './ColumnHints';
-import { CellPosition } from '../types';
+import { GridLayout } from '../types';
 
 interface GridProps {
     puzzle: number[][];
@@ -14,8 +14,8 @@ interface GridProps {
     gameState: {
         solution: number[][];
         isComplete: boolean;
-        toggleCell: (row: number, col: number) => void;
-        saveCellPosition: (row: number, col: number, layout: { x: number, y: number, width: number, height: number }) => void;
+        toggleCell: (row: number, col: number, mode?: any) => void;
+        saveGridLayout: (layout: GridLayout) => void;
     };
     panResponderHandlers: GestureResponderHandlers;
 }
@@ -31,9 +31,25 @@ const Grid = ({
 }: GridProps) => {
     // Tính toán font size cho gợi ý dựa trên kích thước ô
     const hintFontSize = Math.floor(cellSize * 0.5);
+    const gridRef = useRef<View>(null);
 
-    const handleCellLayout = (row: number, col: number, pageX: number, pageY: number, width: number, height: number) => {
-        gameState.saveCellPosition(row, col, { x: pageX, y: pageY, width, height });
+    // Calculate offsets
+    const rowHintsWidth = cellSize * 1.5;
+    const colHintsHeight = cellSize * 0.5;
+
+    // Handle grid layout change
+    const handleGridLayout = (event: LayoutChangeEvent) => {
+        if (gridRef.current) {
+            gridRef.current.measureInWindow((x, y, width, height) => {
+                const gridLayout: GridLayout = {
+                    layout: { x, y, width, height },
+                    cellSize,
+                    topOffset: colHintsHeight,
+                    leftOffset: rowHintsWidth
+                };
+                gameState.saveGridLayout(gridLayout);
+            });
+        }
     };
 
     return (
@@ -42,7 +58,7 @@ const Grid = ({
             <View
                 style={[
                     styles.cornerSpace,
-                    { width: cellSize * 1.5, height: cellSize * 2 },
+                    { width: cellSize * 1.5, height: cellSize * 0.5 },
                 ]}
             />
 
@@ -59,6 +75,8 @@ const Grid = ({
             <View
                 style={styles.gridAndRowHints}
                 {...panResponderHandlers}
+                ref={gridRef}
+                onLayout={handleGridLayout}
             >
                 {rowHints.map((_, rowIndex) => (
                     <View key={`row-${rowIndex}`} style={styles.row}>
@@ -84,7 +102,6 @@ const Grid = ({
                                         gameState.toggleCell(rowIndex, colIndex);
                                     }
                                 }}
-                                onCellLayout={handleCellLayout}
                             />
                         ))}
                     </View>

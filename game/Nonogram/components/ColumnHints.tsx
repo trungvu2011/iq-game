@@ -16,7 +16,7 @@ const ColumnHints = ({ hints, cellSize, hintFontSize }: ColumnHintsProps) => {
                     style={[
                         styles.colHint,
                         {
-                            width: cellSize,
+                            width: cellSize - 2,
                             height: cellSize * 2,
                         },
                     ]}
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         backgroundColor: '#E0F7FA',
         borderRadius: 0,
-        margin: 0,
+        margin: 1,
     },
     colHintInner: {
         alignItems: 'center',

@@ -42,9 +42,10 @@ const GameStatusBanner = ({ status, title, onButtonPress }: GameStatusBannerProp
 const styles = StyleSheet.create({
     banner: {
         paddingVertical: 10,
-        paddingHorizontal: 20,
+        paddingHorizontal: 30,
         borderRadius: 20,
         marginBottom: 15,
+        marginTop: 15,
         alignItems: 'center',
     },
     bannerText: {
