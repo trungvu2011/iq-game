@@ -4,7 +4,7 @@ import { NonogramLevel, CellPosition, WrongCell, GridLayout } from '../types';
 
 export const useNonogramGame = (levels: NonogramLevel[]) => {
     // State variables
-    const [level, setLevel] = useState(180);
+    const [level, setLevel] = useState(151);
     const [renderKey, setRenderKey] = useState(0);
     const [lives, setLives] = useState(3);
     const [gameStatus, setGameStatus] = useState(GAME_STATUS.PLAYING);
@@ -329,10 +329,10 @@ export const useNonogramGame = (levels: NonogramLevel[]) => {
             clearTimeout(wrongCellsTimerRef.current);
             wrongCellsTimerRef.current = null;
         }
-        
+
         // Clear wrong cells list
         setWrongCells([]);
-        
+
         const rows = puzzle.length;
         const cols = puzzle[0]?.length || 0;
 

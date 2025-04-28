@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import { SafeAreaView, StatusBar, StyleSheet, View } from 'react-native';
 import nonogramLevels from './nonogram_levels.json';
 import { calculateCellSize } from './utils/calculationUtils';
 import { useNonogramGame } from './hooks/useNonogramGame';
@@ -43,7 +43,7 @@ const Nonogram = () => {
     console.log('Game Status:', gameStatus);
 
     return (
-        <SafeAreaView style={styles.container} key={renderKey}>
+        <View style={styles.container} key={renderKey}>
             <StatusBar backgroundColor="#4A6572" barStyle="light-content" />
 
             <Header
@@ -88,7 +88,7 @@ const Nonogram = () => {
                     gameStatus={gameStatus}
                 />
             }
-        </SafeAreaView>
+        </View>
     );
 };
 
