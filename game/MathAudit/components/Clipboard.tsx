@@ -2,69 +2,112 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native'
 import React, { useMemo } from 'react'
 import { MathEquation } from '../types'
 
-// Get screen dimensions
+// Lấy kích thước màn hình
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-// Base font sizes
+// Kích thước font cơ bản
 const MAX_FONT_SIZE = 48;
 const MIN_FONT_SIZE = 28;
 
+/**
+ * Props cho component Clipboard
+ */
 interface ClipboardProps {
     equation: MathEquation;
     showAnswer?: boolean;
 }
 
+/**
+ * Component ClipboardClip - Hiển thị phần kẹp giấy ở trên cùng của clipboard
+ */
+const ClipboardClip = () => (
+    <View style={styles.clipboardClip}>
+        <View style={styles.clipInner} />
+    </View>
+);
+
+/**
+ * Component EquationDisplay - Hiển thị phương trình toán học
+ * @param equation Mảng chứa các phần của phương trình
+ * @param fontSize Kích thước font cho phương trình
+ */
+const EquationDisplay = ({
+    equation,
+    fontSize
+}: {
+    equation: string[],
+    fontSize: number
+}) => (
+    <>
+        {equation.map((item, index) => (
+            <Text
+                key={index}
+                style={[styles.equationItem, { fontSize }]}
+            >
+                {item}
+            </Text>
+        ))}
+    </>
+);
+
+/**
+ * Component AnswerDisplay - Hiển thị kết quả đánh giá phương trình
+ * @param isCorrect Phương trình có đúng không
+ */
+const AnswerDisplay = ({
+    isCorrect
+}: {
+    isCorrect: boolean
+}) => (
+    <View style={styles.answerContainer}>
+        <Text style={[
+            styles.answerText,
+            { color: isCorrect ? '#4CAF50' : '#E53935' }
+        ]}>
+            Phương trình này {isCorrect ? 'ĐÚNG' : 'SAI'}
+        </Text>
+    </View>
+);
+
+/**
+ * Component Clipboard - Hiển thị phương trình toán học trên một bảng kẹp giấy
+ */
 const Clipboard = ({ equation, showAnswer = false }: ClipboardProps) => {
-    // Calculate font size based on equation length
+    // Tính toán kích thước font dựa trên độ dài phương trình
     const fontSize = useMemo(() => {
-        // Get total length of all equation parts
+        // Tính tổng độ dài của tất cả các phần trong phương trình
         const totalLength = equation.equation.reduce((acc, curr) => acc + curr.length, 0);
 
-        // Calculate complexity factor based on number of items and their length
+        // Tính toán hệ số phức tạp dựa trên số lượng phần tử và độ dài của chúng
         const complexityFactor = equation.equation.length * 0.2 + totalLength * 0.4;
 
-        // Calculate font size inversely proportional to complexity
-        // More complex equations get smaller font sizes
+        // Tính toán kích thước font tỷ lệ nghịch với độ phức tạp
+        // Phương trình phức tạp hơn có kích thước font nhỏ hơn
         let calculatedSize = MAX_FONT_SIZE - complexityFactor * 2;
 
-        // Ensure font size stays within bounds
+        // Đảm bảo kích thước font nằm trong giới hạn
         return Math.max(MIN_FONT_SIZE, Math.min(MAX_FONT_SIZE, calculatedSize));
     }, [equation]);
 
     return (
         <View style={styles.clipboardContainer}>
-            {/* Clipboard Clip */}
-            <View style={styles.clipboardClip}>
-                <View style={styles.clipInner} />
-            </View>
+            {/* Kẹp giấy */}
+            <ClipboardClip />
 
-            {/* Paper Content */}
+            {/* Nội dung giấy */}
             <View style={styles.paper}>
-                {equation.equation.map((item, index) => (
-                    <Text
-                        key={index}
-                        style={[styles.equationItem, { fontSize }]}
-                    >
-                        {item}
-                    </Text>
-                ))}
+                {/* Hiển thị phương trình */}
+                <EquationDisplay equation={equation.equation} fontSize={fontSize} />
 
-                {showAnswer && (
-                    <View style={styles.answerContainer}>
-                        <Text style={[
-                            styles.answerText,
-                            { color: equation.isCorrect ? '#4CAF50' : '#E53935' }
-                        ]}>
-                            This equation is {equation.isCorrect ? 'CORRECT' : 'INCORRECT'}
-                        </Text>
-                    </View>
-                )}
+                {/* Hiển thị kết quả đánh giá nếu được yêu cầu */}
+                {showAnswer && <AnswerDisplay isCorrect={equation.isCorrect} />}
             </View>
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    // Container chính
     clipboardContainer: {
         width: screenWidth * 0.9,
         height: screenHeight * 0.6,
@@ -81,6 +124,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 80,
     },
+    // Kẹp giấy
     clipboardClip: {
         width: 60,
         height: 20,
@@ -96,12 +140,14 @@ const styles = StyleSheet.create({
         shadowRadius: 2.22,
         elevation: 3,
     },
+    // Phần bên trong kẹp giấy
     clipInner: {
         width: 30,
         height: 8,
         backgroundColor: '#E6A800',
         borderRadius: 2,
     },
+    // Giấy
     paper: {
         width: '100%',
         height: '100%',
@@ -110,13 +156,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    // Mục phương trình
     equationItem: {
         marginVertical: 10,
         textAlign: 'center',
         fontWeight: 'bold',
         color: '#333',
-        // fontSize is now dynamically applied
+        // Kích thước font được áp dụng động
     },
+    // Container kết quả đánh giá
     answerContainer: {
         marginTop: 20,
         padding: 15,
@@ -132,6 +180,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
         elevation: 2,
     },
+    // Text kết quả đánh giá
     answerText: {
         fontSize: 18,
         fontWeight: 'bold',

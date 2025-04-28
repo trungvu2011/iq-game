@@ -1,390 +1,148 @@
-import { View, SafeAreaView, StyleSheet, Dimensions, Alert, Platform, StatusBar as RNStatusBar, Text } from 'react-native'
-import React, { useState, useEffect, useCallback } from 'react'
-import { generateEquationForCurrentLevel } from './constants/gameData'
+import { View, StyleSheet, Platform, StatusBar as RNStatusBar } from 'react-native'
+import React from 'react'
 import TopBar from './components/TopBar'
 import Clipboard from './components/Clipboard'
 import AnswerButtons from './components/AnswerButtons'
 import HelpModal from './components/HelpModal'
 import PauseModal from './components/PauseModal'
 import AnswerModal from './components/AnswerModal'
-import { MathEquation } from './types'
+import GameMessage from './components/GameMessage'
+import { useMathAudit } from './hooks/useMathAudit'
+import { Alert } from 'react-native'
 
-// Get screen dimensions
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
-// Constants for the game
-const QUESTIONS_TO_COMPLETE_LEVEL = 7;
-const LEVEL_TIME_LIMIT = 60; // seconds
-const MAX_LEVEL = 10; // Maximum level in the game
-const MIN_QUESTIONS_TO_WIN = 7; // Minimum question number to win the level
-
-// Scoring configuration by level
-const SCORE_CONFIG = {
-    1: { baseCorrect: 100, baseWrong: 96, incrementCorrect: 20, incrementWrong: 16 },
-    2: { baseCorrect: 140, baseWrong: 128, incrementCorrect: 20, incrementWrong: 16 },
-    3: { baseCorrect: 180, baseWrong: 168, incrementCorrect: 30, incrementWrong: 24 },
-    4: { baseCorrect: 240, baseWrong: 216, incrementCorrect: 30, incrementWrong: 24 },
-    5: { baseCorrect: 300, baseWrong: 264, incrementCorrect: 30, incrementWrong: 24 },
-    6: { baseCorrect: 360, baseWrong: 312, incrementCorrect: 30, incrementWrong: 24 },
-    7: { baseCorrect: 420, baseWrong: 360, incrementCorrect: 30, incrementWrong: 24 },
-    8: { baseCorrect: 480, baseWrong: 408, incrementCorrect: 30, incrementWrong: 24 },
-    9: { baseCorrect: 540, baseWrong: 460, incrementCorrect: 40, incrementWrong: 30 },
-    10: { baseCorrect: 620, baseWrong: 520, incrementCorrect: 40, incrementWrong: 30 },
-};
-
+/**
+ * Component chính của game Math Audit
+ * Quản lý tất cả các thành phần của game và điều khiển luồng chơi
+ */
 const MathAudit = () => {
-    // Game state
-    const [isPaused, setIsPaused] = useState(false);
-    const [showHelp, setShowHelp] = useState(false);
-    const [showPauseModal, setShowPauseModal] = useState(false);
-    const [currentQuestion, setCurrentQuestion] = useState(1);
-    const [totalQuestions, setTotalQuestions] = useState(QUESTIONS_TO_COMPLETE_LEVEL);
-    const [levelScore, setLevelScore] = useState(0); // Track score for current level separately
-    const [answerSelected, setAnswerSelected] = useState(false);
-    const [level, setLevel] = useState(1);
-    const [gameOver, setGameOver] = useState(false);
-    const [gameCompleted, setGameCompleted] = useState(false);
-    const [timerResetTrigger, setTimerResetTrigger] = useState(false);
-    const [showAnswerModal, setShowAnswerModal] = useState(false);
-    const [wrongAnswerEquation, setWrongAnswerEquation] = useState<MathEquation | null>(null);
+    // Sử dụng hook useMathAudit để quản lý trạng thái game
+    const gameState = useMathAudit();
 
-    // Current question data - generate dynamically
-    const [currentEquation, setCurrentEquation] = useState<MathEquation>(generateEquationForCurrentLevel(1));
-
-    // Game progress tracking
-    const [correctAnswersInLevel, setCorrectAnswersInLevel] = useState(0);
-    const [wrongAnswersInLevel, setWrongAnswersInLevel] = useState(0);
-    const [totalAttempts, setTotalAttempts] = useState(0);
-    const [showLevelComplete, setShowLevelComplete] = useState(false);
-    const [showLevelFailed, setShowLevelFailed] = useState(false);
-
-    // console.log("Correct Answers in Level: ", correctAnswersInLevel);
-
-    // Generate new question when level changes
-    useEffect(() => {
-        setCurrentEquation(generateEquationForCurrentLevel(level));
-        setCorrectAnswersInLevel(0);
-        setWrongAnswersInLevel(0);
-        setTotalAttempts(0);
-        setCurrentQuestion(1);
-        setLevelScore(0); // Reset level score when level changes
-    }, [level]);
-
-    const handlePause = () => {
-        setIsPaused(!isPaused);
-        setShowPauseModal(!showPauseModal);
-    };
-
-    const handleContinue = () => {
-        setIsPaused(false);
-        setShowPauseModal(false);
-    };
-
-    const handleRestart = () => {
-        // Reset game state while preserving the current level
-        setCurrentEquation(generateEquationForCurrentLevel(level));
-        setCurrentQuestion(1);
-        setCorrectAnswersInLevel(0);
-        setWrongAnswersInLevel(0);
-        setTotalAttempts(0);
-        setLevelScore(0); // Reset level score when restarting
-        setAnswerSelected(false);
-        setIsPaused(false);
-        setShowPauseModal(false);
-        setGameOver(false);
-        setShowLevelComplete(false);
-        setShowLevelFailed(false);
-        // Toggle timer reset trigger to restart the timer
-        setTimerResetTrigger(prev => !prev);
-    };
-
-    const handleHowToPlay = () => {
-        setShowHelp(true);
-        setShowPauseModal(false);
-    };
-
+    // Xử lý việc rời khỏi game
     const handleLeaveGame = () => {
         Alert.alert(
-            "Leave Game",
-            "This would navigate back to the main menu in a complete app.",
+            "Rời khỏi game",
+            "Điều này sẽ chuyển về menu chính trong ứng dụng hoàn chỉnh.",
             [
-                { text: "OK", onPress: () => setShowPauseModal(false) }
+                { text: "OK", onPress: () => gameState.handleContinue() }
             ]
         );
     };
 
-    const handleHelp = () => {
-        setShowHelp(true);
-    };
-
-    // Handle when time is up
-    const handleTimeUp = useCallback(() => {
-        // Level failed
-        setShowLevelFailed(true);
-        setIsPaused(true);
-    }, []);
-
-    // Handle level completion
-    const handleLevelComplete = () => {
-        setShowLevelComplete(false);
-        setIsPaused(false);
-
-        // Check if the current level is the last level (10)
-        if (level >= MAX_LEVEL) {
-            // Game is completed, show game completion screen
-            setGameCompleted(true);
-        } else {
-            // Increment the level to move to the next one
-            setLevel(prev => prev + 1);
-            // Reset will happen automatically through the useEffect when level changes
-        }
-    };
-
-    // Handle level failure
-    const handleLevelFailed = () => {
-        setShowLevelFailed(false);
-        setIsPaused(false);
-        // Reset with the same level
-        setCurrentQuestion(1);
-        setCorrectAnswersInLevel(0);
-        // Toggle timer reset trigger to restart the timer
-        setTimerResetTrigger(prev => !prev);
-    };
-
-    // Handle game completion (restart from level 1)
-    const handleGameComplete = () => {
-        setGameCompleted(false);
-        // Reset to level 1
-        handleRestart();
-    };
-
-    // Handle closing the answer modal and continuing the game
-    const handleCloseAnswerModal = () => {
-        // Hide the answer modal
-        setShowAnswerModal(false);
-        // Clear the wrong answer equation
-        setWrongAnswerEquation(null);
-        // Resume the timer
-        setIsPaused(false);
-        // Allow answering again
-        setAnswerSelected(false);
-    };
-
-    const handleAnswer = (selectedAnswer: boolean) => {
-        // Prevent multiple answers or answering while paused
-        if (answerSelected || isPaused) return;
-
-        setAnswerSelected(true);
-        setTotalAttempts(prev => prev + 1);
-
-        // Check if user's answer (correct/incorrect) matches whether the equation is actually correct
-        const isAnswerCorrect = (selectedAnswer === currentEquation.isCorrect);
-
-        // Get the scoring config for the current level
-        const levelConfig = SCORE_CONFIG[level as keyof typeof SCORE_CONFIG] || SCORE_CONFIG[1];
-
-        // Update score and progress based on answer
-        if (isAnswerCorrect) {
-            // Calculate points based on level and question number
-            const pointsToAdd = levelConfig.baseCorrect + (currentQuestion - 1) * levelConfig.incrementCorrect;
-
-            // Update level scores
-            setLevelScore(prev => prev + pointsToAdd);
-
-            // Increment correct answers count
-            setCorrectAnswersInLevel(prev => prev + 1);
-
-            // Increment the current question counter
-            const nextQuestionNumber = currentQuestion + 1;
-
-            // Check if level is completed when current question exceeds 7
-            if (nextQuestionNumber > MIN_QUESTIONS_TO_WIN) {
-                setTimeout(() => {
-                    setShowLevelComplete(true);
-                    setIsPaused(true);
-                    // We'll postpone the level change until after the user views the stats
-                }, 500);
-            } else {
-                setCurrentQuestion(nextQuestionNumber);
-            }
-
-            // Generate a new question for the next question
-            setCurrentEquation(generateEquationForCurrentLevel(level));
-
-            // Allow another answer after a delay
-            setTimeout(() => {
-                setAnswerSelected(false);
-            }, 500);
-        } else {
-            // Increment wrong answers count
-            setWrongAnswersInLevel(prev => prev + 1);
-
-            // Calculate penalty based on level and question number
-            const pointsToPenalize = levelConfig.baseWrong + (currentQuestion - 1) * levelConfig.incrementWrong;
-
-            // Update level scores (don't go below 0)
-            setLevelScore(prev => Math.max(prev - pointsToPenalize, 0));
-
-            // Save a copy of the current equation for the answer modal
-            setWrongAnswerEquation({ ...currentEquation });
-
-            // Pause the timer and show the answer modal
-            setIsPaused(true);
-            setShowAnswerModal(true);
-
-            // Prepare the next question (will be shown after closing the modal)
-            const nextQuestionNumber = Math.max(currentQuestion - 1, 1);
-            setCurrentQuestion(nextQuestionNumber);
-            setCurrentEquation(generateEquationForCurrentLevel(level));
-
-            // Don't auto-reset answerSelected, it will be reset when the modal is closed
-        }
-    };
-
     return (
         <View style={styles.container}>
+            {/* Thanh trạng thái trên cùng */}
             <View style={styles.topBarContainer}>
                 <TopBar
-                    currentQuestion={currentQuestion}
-                    totalQuestions={totalQuestions}
-                    score={levelScore}
-                    level={level}
-                    onPause={handlePause}
-                    onHelp={handleHelp}
-                    onTimeUp={handleTimeUp}
-                    shouldResetTimer={timerResetTrigger}
-                    isPaused={isPaused}
+                    currentQuestion={gameState.currentQuestion}
+                    totalQuestions={gameState.totalQuestions}
+                    score={gameState.levelScore}
+                    level={gameState.level}
+                    onPause={gameState.handlePause}
+                    onHelp={gameState.handleHelp}
+                    onTimeUp={gameState.handleTimeUp}
+                    shouldResetTimer={gameState.timerResetTrigger}
+                    isPaused={gameState.isPaused}
                 />
             </View>
 
-            {/* Main Game Content */}
+            {/* Nội dung chính của game */}
             <View style={styles.gameContent}>
-                {gameCompleted ? (
-                    <View style={styles.messageContainer}>
-                        <Text style={styles.titleText}>Congratulations!</Text>
-                        <Text style={styles.messageText}>You completed all 10 levels!</Text>
-                        <View style={styles.nextLevelButton} >
-                            <Text style={styles.nextLevelButtonText} onPress={handleGameComplete}>PLAY AGAIN</Text>
-                        </View>
-                    </View>
-                ) : showLevelComplete ? (
-                    <View style={styles.messageContainer}>
-                        <Text style={styles.titleText}>Level {level} Completed!</Text>
-                        <Text style={styles.messageText}>Level Score: {levelScore}</Text>
-                        <Text style={styles.messageText}>Correct Answers: {correctAnswersInLevel}</Text>
-                        <Text style={styles.messageText}>Wrong Answers: {wrongAnswersInLevel}</Text>
-                        <Text style={styles.messageText}>Success Rate: {totalAttempts > 0 ? Math.round((correctAnswersInLevel / totalAttempts) * 100) : 0}%</Text>
-                        <View style={styles.nextLevelButton} >
-                            <Text style={styles.nextLevelButtonText} onPress={handleLevelComplete}>{level >= MAX_LEVEL ? "FINISH GAME" : "NEXT LEVEL"}</Text>
-                        </View>
-                    </View>
-                ) : showLevelFailed ? (
-                    <View style={styles.messageContainer}>
-                        <Text style={styles.titleText}>Time's Up!</Text>
-                        <Text style={styles.messageText}>Level Score: {levelScore}</Text>
-                        <Text style={styles.messageText}>Correct Answers: {correctAnswersInLevel}</Text>
-                        <Text style={styles.messageText}>Wrong Answers: {wrongAnswersInLevel}</Text>
-                        <Text style={styles.messageText}>Success Rate: {totalAttempts > 0 ? Math.round((correctAnswersInLevel / totalAttempts) * 100) : 0}%</Text>
-                        <View style={styles.nextLevelButton} >
-                            <Text style={styles.nextLevelButtonText} onPress={handleLevelFailed}>TRY AGAIN</Text>
-                        </View>
-                    </View>
+                {gameState.gameCompleted ? (
+                    // Hiển thị thông báo hoàn thành game
+                    <GameMessage
+                        type="gameover"
+                        level={gameState.level}
+                        score={gameState.levelScore}
+                        correctAnswers={gameState.correctAnswersInLevel}
+                        wrongAnswers={gameState.wrongAnswersInLevel}
+                        totalAttempts={gameState.totalAttempts}
+                        onAction={gameState.handleGameComplete}
+                        maxLevel={gameState.maxLevel}
+                    />
+                ) : gameState.showLevelComplete ? (
+                    // Hiển thị thông báo hoàn thành cấp độ
+                    <GameMessage
+                        type="complete"
+                        level={gameState.level}
+                        score={gameState.levelScore}
+                        correctAnswers={gameState.correctAnswersInLevel}
+                        wrongAnswers={gameState.wrongAnswersInLevel}
+                        totalAttempts={gameState.totalAttempts}
+                        onAction={gameState.handleLevelComplete}
+                        maxLevel={gameState.maxLevel}
+                    />
+                ) : gameState.showLevelFailed ? (
+                    // Hiển thị thông báo thất bại
+                    <GameMessage
+                        type="failed"
+                        level={gameState.level}
+                        score={gameState.levelScore}
+                        correctAnswers={gameState.correctAnswersInLevel}
+                        wrongAnswers={gameState.wrongAnswersInLevel}
+                        totalAttempts={gameState.totalAttempts}
+                        onAction={gameState.handleLevelFailed}
+                        maxLevel={gameState.maxLevel}
+                    />
                 ) : (
+                    // Hiển thị màn hình chơi game chính
                     <>
-                        <Clipboard equation={currentEquation} />
-                        <AnswerButtons onAnswer={handleAnswer} disabled={answerSelected || isPaused} />
+                        {/* Hiển thị phương trình */}
+                        <Clipboard equation={gameState.currentEquation} />
+
+                        {/* Hiển thị các nút trả lời */}
+                        <AnswerButtons
+                            onAnswer={gameState.handleAnswer}
+                            disabled={gameState.answerSelected || gameState.isPaused}
+                        />
                     </>
                 )}
             </View>
 
-            {/* Help Modal */}
-            <HelpModal visible={showHelp} onClose={() => setShowHelp(false)} />
+            {/* Modal trợ giúp */}
+            <HelpModal
+                visible={gameState.showHelp}
+                onClose={() => gameState.setShowHelp(false)}
+            />
 
-            {/* Pause Modal */}
+            {/* Modal tạm dừng */}
             <PauseModal
-                visible={showPauseModal}
-                onContinue={handleContinue}
-                onRestart={handleRestart}
-                onHowToPlay={handleHowToPlay}
+                visible={gameState.showPauseModal}
+                onContinue={gameState.handleContinue}
+                onRestart={gameState.handleRestart}
+                onHowToPlay={gameState.handleHowToPlay}
                 onLeaveGame={handleLeaveGame}
             />
 
-            {/* Answer Modal - shown when player answers incorrectly */}
+            {/* Modal câu trả lời - hiển thị khi người chơi trả lời sai */}
             <AnswerModal
-                visible={showAnswerModal}
-                onClose={handleCloseAnswerModal}
-                equation={wrongAnswerEquation}
+                visible={gameState.showAnswerModal}
+                onClose={gameState.handleCloseAnswerModal}
+                equation={gameState.wrongAnswerEquation}
             />
         </View>
     )
 }
 
+// Định nghĩa style
 const styles = StyleSheet.create({
+    // Container chính
     container: {
         flex: 1,
         backgroundColor: '#F5F5F5',
         paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0,
     },
+    // Container cho thanh trạng thái trên cùng
     topBarContainer: {
         width: '100%',
         alignItems: 'center',
     },
+    // Nội dung chính của game
     gameContent: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 20,
-    },
-    messageContainer: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 15,
-        padding: 25,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 6,
-        width: '85%',
-    },
-    titleText: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        color: '#4A6572',
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    messageText: {
-        fontSize: 18,
-        color: '#757575',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    actionText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#E57373',
-        marginTop: 20,
-        padding: 10,
-    },
-    nextLevelButton: {
-        marginTop: 20,
-        backgroundColor: '#4CAF50',
-        borderRadius: 10,
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-    },
-    nextLevelButtonText: {
-        color: '#FFFFFF',
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
     },
 });
 

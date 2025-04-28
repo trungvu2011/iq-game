@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native'
 import React, { useState, useEffect } from 'react'
 
-// Get the screen width
+// Lấy chiều rộng màn hình
 const screenWidth = Dimensions.get('window').width;
 
+/**
+ * Props cho component TopBar
+ */
 interface TopBarProps {
     totalQuestions?: number;
     currentQuestion?: number;
@@ -16,6 +19,108 @@ interface TopBarProps {
     isPaused?: boolean;
 }
 
+/**
+ * Component IconButton - Nút biểu tượng trong thanh trạng thái
+ */
+const IconButton = ({
+    icon,
+    onPress
+}: {
+    icon: string,
+    onPress: () => void
+}) => (
+    <TouchableOpacity
+        style={styles.iconButton}
+        onPress={onPress}
+    >
+        <Text style={styles.iconText}>{icon}</Text>
+    </TouchableOpacity>
+);
+
+/**
+ * Component InfoItem - Hiển thị một mục thông tin trong thanh trạng thái
+ */
+const InfoItem = ({
+    value
+}: {
+    value: string | number
+}) => (
+    <View style={styles.infoItem}>
+        <Text style={styles.infoValue}>{value}</Text>
+    </View>
+);
+
+/**
+ * Component Timer - Quản lý và hiển thị thời gian còn lại
+ */
+const Timer = ({
+    isPaused,
+    shouldReset,
+    level,
+    onTimeUp
+}: {
+    isPaused: boolean,
+    shouldReset: boolean,
+    level: number,
+    onTimeUp: () => void
+}) => {
+    // Thời gian còn lại (giây)
+    const [seconds, setSeconds] = useState(60);
+    // Trạng thái hoạt động của bộ đếm thời gian
+    const [timerActive, setTimerActive] = useState(true);
+
+    // Cập nhật trạng thái hoạt động khi isPaused thay đổi
+    useEffect(() => {
+        setTimerActive(!isPaused);
+    }, [isPaused]);
+
+    // Quản lý bộ đếm thời gian
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+
+        if (timerActive) {
+            interval = setInterval(() => {
+                setSeconds(seconds => {
+                    const newSeconds = seconds - 1;
+                    if (newSeconds <= 0) {
+                        // Xóa interval khi hết thời gian
+                        clearInterval(interval);
+                        // Gọi callback onTimeUp
+                        onTimeUp();
+                        // Đặt lại bộ đếm thời gian cho cấp độ tiếp theo
+                        return 60;
+                    }
+                    return newSeconds;
+                });
+            }, 1000);
+        }
+
+        // Xóa interval khi component bị hủy
+        return () => clearInterval(interval);
+    }, [timerActive, onTimeUp]);
+
+    // Đặt lại bộ đếm thời gian khi cấp độ thay đổi hoặc shouldReset là true
+    useEffect(() => {
+        setSeconds(60);
+        // Đảm bảo bộ đếm thời gian hoạt động khi đặt lại
+        setTimerActive(true);
+    }, [level, shouldReset]);
+
+    /**
+     * Định dạng thời gian thành chuỗi MM:SS
+     */
+    const formatTime = (totalSeconds: number): string => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    return <InfoItem value={formatTime(seconds)} />;
+};
+
+/**
+ * Component TopBar - Hiển thị thanh trạng thái trên cùng của game
+ */
 const TopBar = ({
     totalQuestions = 7,
     currentQuestion = 1,
@@ -27,89 +132,42 @@ const TopBar = ({
     shouldResetTimer = false,
     isPaused = false
 }: TopBarProps) => {
-    const [seconds, setSeconds] = useState(60);
-    const [timerActive, setTimerActive] = useState(true);
-
-    // Update timerActive when isPaused changes
-    useEffect(() => {
-        setTimerActive(!isPaused);
-    }, [isPaused]);
-
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-
-        if (timerActive) {
-            interval = setInterval(() => {
-                setSeconds(seconds => {
-                    const newSeconds = seconds - 1;
-                    if (newSeconds <= 0) {
-                        // Clear the interval when time is up
-                        clearInterval(interval);
-                        // Call the onTimeUp callback
-                        onTimeUp();
-                        // Reset the timer for next level
-                        return 60;
-                    }
-                    return newSeconds;
-                });
-            }, 1000);
-        }
-
-        return () => clearInterval(interval);
-    }, [timerActive, onTimeUp]);
-
-    // Reset timer when level changes or shouldResetTimer is true
-    useEffect(() => {
-        setSeconds(60);
-        // Ensure timer is active when reset
-        setTimerActive(true);
-    }, [level, shouldResetTimer]);
-
-    const formatTime = (totalSeconds: number): string => {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-
     return (
         <View style={styles.container}>
-            {/* Left: Pause Button */}
-            <TouchableOpacity
-                style={styles.iconButton}
-                onPress={() => {
-                    onPause();
-                }}
-            >
-                <Text style={styles.iconText}>{!isPaused ? "⏸️" : "▶️"}</Text>
-            </TouchableOpacity>
+            {/* Trái: Nút tạm dừng */}
+            <IconButton
+                icon={!isPaused ? "⏸️" : "▶️"}
+                onPress={onPause}
+            />
 
-            {/* Center: Information Area */}
+            {/* Giữa: Khu vực thông tin */}
             <View style={styles.infoContainer}>
-                <View style={styles.infoItem}>
-                    <Text style={styles.infoValue}>{formatTime(seconds)}</Text>
-                </View>
+                {/* Bộ đếm thời gian */}
+                <Timer
+                    isPaused={isPaused}
+                    shouldReset={shouldResetTimer}
+                    level={level}
+                    onTimeUp={onTimeUp}
+                />
 
-                <View style={styles.infoItem}>
-                    <Text style={styles.infoValue}>{currentQuestion}/{totalQuestions}</Text>
-                </View>
+                {/* Tiến trình câu hỏi */}
+                <InfoItem value={`${currentQuestion}/${totalQuestions}`} />
 
-                <View style={styles.infoItem}>
-                    <Text style={styles.infoValue}>{score}</Text>
-                </View>
+                {/* Điểm số */}
+                <InfoItem value={score} />
             </View>
 
-            {/* Right: Help Button */}
-            <TouchableOpacity
-                style={styles.iconButton}
+            {/* Phải: Nút trợ giúp */}
+            <IconButton
+                icon="❓"
                 onPress={onHelp}
-            >
-                <Text style={styles.iconText}>❓</Text>
-            </TouchableOpacity>
+            />
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    // Container chính
     container: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -125,8 +183,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         width: screenWidth,
-        // gap: 20,
     },
+    // Nút biểu tượng
     iconButton: {
         width: 40,
         height: 40,
@@ -135,26 +193,29 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         backgroundColor: '#F0F0F0',
     },
+    // Text biểu tượng
     iconText: {
         fontSize: 20,
     },
+    // Container khu vực thông tin
     infoContainer: {
         flexDirection: 'row',
-        justifyContent: 'center', // Changed from 'space-between' to 'center'
+        justifyContent: 'center',
         flex: 1,
         marginHorizontal: 16,
-        gap: 40, // Added gap for consistent spacing between items
+        gap: 40,
     },
+    // Mục thông tin
     infoItem: {
         alignItems: 'center',
-        minWidth: 60, // Added minWidth instead of fixed width on text
+        minWidth: 60,
     },
+    // Giá trị thông tin
     infoValue: {
-        // Removed fixed width of 50
         fontSize: 16,
         fontWeight: 'bold',
         color: '#333333',
-        textAlign: 'center', // Ensure text is centered
+        textAlign: 'center',
     },
 });
 
