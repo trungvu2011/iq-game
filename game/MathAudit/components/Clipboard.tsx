@@ -11,9 +11,10 @@ const MIN_FONT_SIZE = 28;
 
 interface ClipboardProps {
     equation: MathEquation;
+    showAnswer?: boolean;
 }
 
-const Clipboard = ({ equation }: ClipboardProps) => {
+const Clipboard = ({ equation, showAnswer = false }: ClipboardProps) => {
     // Calculate font size based on equation length
     const fontSize = useMemo(() => {
         // Get total length of all equation parts
@@ -47,6 +48,17 @@ const Clipboard = ({ equation }: ClipboardProps) => {
                         {item}
                     </Text>
                 ))}
+
+                {showAnswer && (
+                    <View style={styles.answerContainer}>
+                        <Text style={[
+                            styles.answerText,
+                            { color: equation.isCorrect ? '#4CAF50' : '#E53935' }
+                        ]}>
+                            This equation is {equation.isCorrect ? 'CORRECT' : 'INCORRECT'}
+                        </Text>
+                    </View>
+                )}
             </View>
         </View>
     )
@@ -104,6 +116,25 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333',
         // fontSize is now dynamically applied
+    },
+    answerContainer: {
+        marginTop: 20,
+        padding: 15,
+        backgroundColor: '#F8F9FA',
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        width: '80%',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    answerText: {
+        fontSize: 18,
+        fontWeight: 'bold',
     },
 });
 

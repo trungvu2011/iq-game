@@ -6,6 +6,7 @@ import Clipboard from './components/Clipboard'
 import AnswerButtons from './components/AnswerButtons'
 import HelpModal from './components/HelpModal'
 import PauseModal from './components/PauseModal'
+import AnswerModal from './components/AnswerModal'
 import { MathEquation } from './types'
 
 // Get screen dimensions
@@ -44,6 +45,8 @@ const MathAudit = () => {
     const [gameOver, setGameOver] = useState(false);
     const [gameCompleted, setGameCompleted] = useState(false);
     const [timerResetTrigger, setTimerResetTrigger] = useState(false);
+    const [showAnswerModal, setShowAnswerModal] = useState(false);
+    const [wrongAnswerEquation, setWrongAnswerEquation] = useState<MathEquation | null>(null);
 
     // Current question data - generate dynamically
     const [currentEquation, setCurrentEquation] = useState<MathEquation>(generateEquationForCurrentLevel(1));
@@ -155,6 +158,18 @@ const MathAudit = () => {
         handleRestart();
     };
 
+    // Handle closing the answer modal and continuing the game
+    const handleCloseAnswerModal = () => {
+        // Hide the answer modal
+        setShowAnswerModal(false);
+        // Clear the wrong answer equation
+        setWrongAnswerEquation(null);
+        // Resume the timer
+        setIsPaused(false);
+        // Allow answering again
+        setAnswerSelected(false);
+    };
+
     const handleAnswer = (selectedAnswer: boolean) => {
         // Prevent multiple answers or answering while paused
         if (answerSelected || isPaused) return;
@@ -196,27 +211,34 @@ const MathAudit = () => {
             // Generate a new question for the next question
             setCurrentEquation(generateEquationForCurrentLevel(level));
 
+            // Allow another answer after a delay
+            setTimeout(() => {
+                setAnswerSelected(false);
+            }, 500);
         } else {
             // Increment wrong answers count
             setWrongAnswersInLevel(prev => prev + 1);
 
             // Calculate penalty based on level and question number
-            const pointsToPenalize = levelConfig.baseWrong + (currentQuestion - 2) * levelConfig.incrementWrong;
+            const pointsToPenalize = levelConfig.baseWrong + (currentQuestion - 1) * levelConfig.incrementWrong;
 
             // Update level scores (don't go below 0)
             setLevelScore(prev => Math.max(prev - pointsToPenalize, 0));
 
-            // Decrement question number but not below 1
-            setCurrentQuestion(Math.max(currentQuestion - 1, 1));
+            // Save a copy of the current equation for the answer modal
+            setWrongAnswerEquation({ ...currentEquation });
 
-            // Generate a new question for the current level
+            // Pause the timer and show the answer modal
+            setIsPaused(true);
+            setShowAnswerModal(true);
+
+            // Prepare the next question (will be shown after closing the modal)
+            const nextQuestionNumber = Math.max(currentQuestion - 1, 1);
+            setCurrentQuestion(nextQuestionNumber);
             setCurrentEquation(generateEquationForCurrentLevel(level));
-        }
 
-        // Allow another answer after a delay
-        setTimeout(() => {
-            setAnswerSelected(false);
-        }, 500);
+            // Don't auto-reset answerSelected, it will be reset when the modal is closed
+        }
     };
 
     return (
@@ -285,6 +307,13 @@ const MathAudit = () => {
                 onRestart={handleRestart}
                 onHowToPlay={handleHowToPlay}
                 onLeaveGame={handleLeaveGame}
+            />
+
+            {/* Answer Modal - shown when player answers incorrectly */}
+            <AnswerModal
+                visible={showAnswerModal}
+                onClose={handleCloseAnswerModal}
+                equation={wrongAnswerEquation}
             />
         </View>
     )
