@@ -9,9 +9,8 @@ interface PatternGridProps {
     grid: number[][];
     colorMap: Record<string, string>;
     rotation: number;
-    size: number;
     showResult?: boolean;
-    isCorrect?: boolean;
+    animationDuration?: number;
 }
 
 /**
@@ -21,30 +20,37 @@ const PatternGrid = ({
     grid,
     colorMap,
     rotation,
-    size,
     showResult = false,
-    isCorrect
+    animationDuration = 500, // Thời gian quay mặc định là 500ms
 }: PatternGridProps) => {
     // Create a rotation animation value
     const rotateAnim = useRef(new Animated.Value(0)).current;
 
-    // Update rotation animation when rotation prop changes
-    useEffect(() => {
+    // Animation function for smooth rotation
+    const animateRotation = () => {
+        // Reset animation value if we're starting from the beginning
+        if (!showResult) {
+            rotateAnim.setValue(0);
+            return;
+        }
+
+        // Animate to the target rotation value
         Animated.timing(rotateAnim, {
             toValue: 1,
-            duration: 500,
+            duration: animationDuration,
             useNativeDriver: true,
         }).start();
+    };
 
-        return () => {
-            rotateAnim.setValue(0);
-        };
-    }, [rotation]);
+    // Run animation when showResult changes
+    useEffect(() => {
+        animateRotation();
+    }, [showResult]);
 
-    // Map rotation degrees to animated rotation
+    // Calculate the interpolated rotation value
     const spin = rotateAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: ['0deg', `${-rotation}deg`],
+        outputRange: ['0deg', `${-rotation}deg`]
     });
 
     return (

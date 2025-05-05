@@ -8,9 +8,6 @@ import GameMessage from './components/GameMessage'
 import PatternComparison from './components/PatternComparison'
 import { useTrickyPatterns } from './hooks/useTrickyPatterns'
 
-// Lấy kích thước màn hình
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-
 /**
  * Component chính của game TrickyPatterns
  * Quản lý tất cả các thành phần của game và điều khiển luồng chơi
@@ -40,6 +37,7 @@ const TrickyPatterns = () => {
                     score={gameState.levelScore}
                     level={gameState.level}
                     onPause={gameState.handlePause}
+                    onHelp={() => gameState.helpModalRef.current?.show()}
                     onTimeUp={gameState.handleTimeUp}
                     shouldResetTimer={gameState.timerResetTrigger}
                     isPaused={gameState.isPaused}
@@ -101,6 +99,7 @@ const TrickyPatterns = () => {
                                     showResult={gameState.showResult}
                                     isCorrectAnswer={gameState.isCorrectAnswer}
                                     gridSize={gameState.currentPattern.grid_size}
+                                    animationDuration={500} // Thời gian animation 500ms
                                 />
                             </>
                         )}
@@ -116,13 +115,13 @@ const TrickyPatterns = () => {
 
             {/* Modal trợ giúp */}
             <HelpModal
-                visible={gameState.showHelp}
-                onClose={() => gameState.setShowHelp(false)}
+                ref={gameState.helpModalRef}
+                onClose={() => gameState.helpModalRef.current?.hide()}
             />
 
             {/* Modal tạm dừng */}
             <PauseModal
-                visible={gameState.showPauseModal}
+                ref={gameState.pauseModalRef}
                 onContinue={gameState.handleContinue}
                 onRestart={gameState.handleRestart}
                 onHowToPlay={gameState.handleHowToPlay}

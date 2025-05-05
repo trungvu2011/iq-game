@@ -139,7 +139,7 @@ const TopBar = ({
         <View style={styles.container}>
             {/* Trái: Nút tạm dừng */}
             <IconButton
-                icon={!isPaused ? "⏸️" : "▶️"}
+                icon={isPaused ? "▶️" : "⏸️"}
                 onPress={onPause}
             />
 

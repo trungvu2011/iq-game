@@ -11,6 +11,7 @@ interface PatternComparisonProps {
     showResult: boolean;
     isCorrectAnswer: boolean;
     gridSize: number;
+    animationDuration?: number; // Thêm prop cho thời gian animation
 }
 
 /**
@@ -24,7 +25,7 @@ const PatternComparison = ({
     rotation,
     showResult,
     isCorrectAnswer,
-    gridSize
+    animationDuration = 500, // Mặc định là 500ms
 }: PatternComparisonProps) => {
     // Khi hiển thị kết quả, xoay gridB theo góc rotation để so sánh
     const gridBRotation = showResult ? rotation : 0;
@@ -53,18 +54,16 @@ const PatternComparison = ({
                     grid={gridA}
                     colorMap={colorMapA}
                     rotation={0}
-                    size={gridSize}
                     showResult={showResult}
-                    isCorrect={isCorrectAnswer}
+                    animationDuration={animationDuration}
                 />
 
                 <PatternGrid
                     grid={gridB}
                     colorMap={colorMapB}
                     rotation={gridBRotation}
-                    size={gridSize}
                     showResult={showResult}
-                    isCorrect={isCorrectAnswer}
+                    animationDuration={animationDuration}
                 />
             </View>
         </View>
