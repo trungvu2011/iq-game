@@ -3,33 +3,25 @@ import React from 'react'
 import PatternGrid from './PatternGrid'
 
 interface PatternComparisonProps {
-    gridA: number[][];
-    colorMapA: Record<string, string>;
-    gridB: number[][];
-    colorMapB: Record<string, string>;
-    rotation: number;
+    pattern1: string[][];
+    pattern2: string[][];
     showResult: boolean;
     isCorrectAnswer: boolean;
-    gridSize: number;
     animationDuration?: number; // Thêm prop cho thời gian animation
+    rotation?: number; // Thêm prop cho góc xoay
 }
 
 /**
  * Component PatternComparison - Hiển thị hai lưới mẫu để so sánh
  */
 const PatternComparison = ({
-    gridA,
-    colorMapA,
-    gridB,
-    colorMapB,
-    rotation,
+    pattern1,
+    pattern2,
     showResult,
     isCorrectAnswer,
     animationDuration = 500, // Mặc định là 500ms
+    rotation = 90, // Góc xoay mặc định là 90 độ
 }: PatternComparisonProps) => {
-    // Khi hiển thị kết quả, xoay gridB theo góc rotation để so sánh
-    const gridBRotation = showResult ? rotation : 0;
-
     return (
         <View style={styles.comparisonContainer}>
             {/* Result icon shown in the middle between the grids */}
@@ -51,19 +43,16 @@ const PatternComparison = ({
 
             <View style={styles.gridsContainer}>
                 <PatternGrid
-                    grid={gridA}
-                    colorMap={colorMapA}
-                    rotation={0}
+                    pattern={pattern1}
                     showResult={showResult}
                     animationDuration={animationDuration}
                 />
 
                 <PatternGrid
-                    grid={gridB}
-                    colorMap={colorMapB}
-                    rotation={gridBRotation}
+                    pattern={pattern2}
                     showResult={showResult}
                     animationDuration={animationDuration}
+                    rotation={rotation} // Truyền góc xoay cho pattern thứ hai
                 />
             </View>
         </View>

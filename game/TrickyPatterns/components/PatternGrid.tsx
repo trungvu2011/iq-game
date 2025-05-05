@@ -1,27 +1,25 @@
-import { View, StyleSheet, Dimensions, Animated, Text } from 'react-native'
+import { View, StyleSheet, Dimensions, Animated } from 'react-native'
 import React, { useRef, useEffect } from 'react'
 import GridBackground from './GridBackground';
 
 // Lấy kích thước màn hình
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 interface PatternGridProps {
-    grid: number[][];
-    colorMap: Record<string, string>;
-    rotation: number;
+    pattern: string[][]; // Mảng 2 chiều chứa mã màu
     showResult?: boolean;
     animationDuration?: number;
+    rotation?: number; // Góc quay, optional
 }
 
 /**
  * Component PatternGrid - Hiển thị lưới mẫu với các chấm màu
  */
 const PatternGrid = ({
-    grid,
-    colorMap,
-    rotation,
+    pattern,
     showResult = false,
     animationDuration = 500, // Thời gian quay mặc định là 500ms
+    rotation = 0, // Mặc định không quay
 }: PatternGridProps) => {
     // Create a rotation animation value
     const rotateAnim = useRef(new Animated.Value(0)).current;
@@ -65,20 +63,15 @@ const PatternGrid = ({
                 </View>
 
                 {/* Các chấm màu */}
-                {grid.map((row, rowIndex) => (
+                {pattern.map((row, rowIndex) => (
                     <View key={`row-${rowIndex}`} style={styles.gridRow}>
-                        {row.map((cell, colIndex) => {
-                            const key = `${rowIndex},${colIndex}`;
-                            const color = colorMap[key] || '#FFFFFF'; // Mặc định là trắng nếu không có màu tương ứng
-
-                            return (
-                                <View key={`cell-${rowIndex}-${colIndex}`} style={styles.gridCell}>
-                                    {cell === 1 && (
-                                        <View style={[styles.dot, { backgroundColor: color }]} />
-                                    )}
-                                </View>
-                            );
-                        })}
+                        {row.map((cellColor, colIndex) => (
+                            <View key={`cell-${rowIndex}-${colIndex}`} style={styles.gridCell}>
+                                {cellColor && cellColor !== 'transparent' && (
+                                    <View style={[styles.dot, { backgroundColor: cellColor }]} />
+                                )}
+                            </View>
+                        ))}
                     </View>
                 ))}
             </Animated.View>

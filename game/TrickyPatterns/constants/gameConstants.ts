@@ -8,20 +8,6 @@
 export type Color = 'red' | 'blue' | 'green' | '#ADD8E6' | '#90EE90';
 
 /**
- * Interface định nghĩa kết quả của việc tạo mẫu
- */
-export interface PatternResult {
-    grid_size: number;
-    num_dots: number;
-    grid_a: number[][];
-    grid_b: number[][];
-    is_same: boolean;
-    rotation: number;
-    color_map_a: Record<string, Color>;
-    color_map_b: Record<string, Color>;
-}
-
-/**
  * Danh sách cấu hình các kích thước grid và số lượng chấm tương ứng cho mỗi câu hỏi
  * Mỗi mục là một cặp [kích thước grid, số lượng chấm]
  * Câu hỏi 1 sử dụng chỉ số 0, câu hỏi 2 sử dụng chỉ số 1, v.v.
@@ -60,3 +46,30 @@ export const COLORS: Color[] = [
  * Các góc xoay có thể có (độ)
  */
 export const ROTATION_ANGLES = [-90, 90, 180];
+
+/**
+ * Cấu hình điểm số theo cấp độ
+ * Mỗi cấp độ có điểm cơ bản và mức tăng điểm khác nhau 
+ */
+export const SCORE_CONFIG = {
+    1: { baseCorrect: 100, baseWrong: 96, incrementCorrect: 20, incrementWrong: 16 },
+    2: { baseCorrect: 140, baseWrong: 128, incrementCorrect: 20, incrementWrong: 16 },
+    3: { baseCorrect: 180, baseWrong: 168, incrementCorrect: 30, incrementWrong: 24 },
+    4: { baseCorrect: 240, baseWrong: 216, incrementCorrect: 30, incrementWrong: 24 },
+    5: { baseCorrect: 300, baseWrong: 264, incrementCorrect: 30, incrementWrong: 24 },
+    6: { baseCorrect: 360, baseWrong: 312, incrementCorrect: 30, incrementWrong: 24 },
+    7: { baseCorrect: 420, baseWrong: 360, incrementCorrect: 30, incrementWrong: 24 },
+    8: { baseCorrect: 480, baseWrong: 408, incrementCorrect: 30, incrementWrong: 24 },
+    9: { baseCorrect: 540, baseWrong: 460, incrementCorrect: 40, incrementWrong: 30 },
+    10: { baseCorrect: 620, baseWrong: 520, incrementCorrect: 40, incrementWrong: 30 },
+};
+
+/**
+ * Các hằng số của game
+ */
+export const GAME_CONSTANTS = {
+    QUESTIONS_TO_COMPLETE_LEVEL: 7,
+    MIN_QUESTIONS_TO_WIN: 7, // Số câu hỏi tối thiểu để hoàn thành cấp độ
+    MAX_LEVEL: 10, // Cấp độ tối đa
+    LEVEL_TIME_LIMITS: 60,
+};

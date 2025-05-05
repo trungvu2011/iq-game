@@ -1,4 +1,4 @@
-import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Dimensions, Alert, Text } from 'react-native'
+import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text } from 'react-native'
 import React from 'react'
 import TopBar from './components/TopBar'
 import AnswerButtons from './components/AnswerButtons'
@@ -7,12 +7,25 @@ import PauseModal from './components/PauseModal'
 import GameMessage from './components/GameMessage'
 import PatternComparison from './components/PatternComparison'
 import { useTrickyPatterns } from './hooks/useTrickyPatterns'
+import { GameContextProvider } from './context/GameContext'
 
 /**
- * Component chính của game TrickyPatterns
+ * Component chính của game TrickyPatterns với Context Provider
  * Quản lý tất cả các thành phần của game và điều khiển luồng chơi
  */
 const TrickyPatterns = () => {
+    return (
+        <GameContextProvider>
+            <TrickyPatternsContent />
+        </GameContextProvider>
+    )
+}
+
+/**
+ * Nội dung chính của game TrickyPatterns
+ * Được bao bọc trong Context Provider
+ */
+const TrickyPatternsContent = () => {
     // Sử dụng hook useTrickyPatterns để quản lý trạng thái game
     const gameState = useTrickyPatterns();
 
@@ -37,10 +50,13 @@ const TrickyPatterns = () => {
                     score={gameState.levelScore}
                     level={gameState.level}
                     onPause={gameState.handlePause}
-                    onHelp={() => gameState.helpModalRef.current?.show()}
+                    onHelp={gameState.showHelpModal}
                     onTimeUp={gameState.handleTimeUp}
                     shouldResetTimer={gameState.timerResetTrigger}
                     isPaused={gameState.isPaused}
+                    timeRemaining={gameState.timeRemaining}
+                    formattedTime={gameState.formattedTime}
+                    timePercentage={gameState.timePercentage}
                 />
             </View>
 
@@ -91,15 +107,12 @@ const TrickyPatterns = () => {
                                     Will rotating the right pattern make it match the left?
                                 </Text>
                                 <PatternComparison
-                                    gridA={gameState.currentPattern.grid_a}
-                                    colorMapA={gameState.currentPattern.color_map_a}
-                                    gridB={gameState.currentPattern.grid_b}
-                                    colorMapB={gameState.currentPattern.color_map_b}
-                                    rotation={gameState.currentPattern.rotation}
+                                    pattern1={gameState.currentPattern.pattern1}
+                                    pattern2={gameState.currentPattern.pattern2}
                                     showResult={gameState.showResult}
                                     isCorrectAnswer={gameState.isCorrectAnswer}
-                                    gridSize={gameState.currentPattern.grid_size}
                                     animationDuration={500} // Thời gian animation 500ms
+                                    rotation={gameState.currentPattern.rotation} // Truyền góc xoay từ pattern
                                 />
                             </>
                         )}
@@ -115,15 +128,15 @@ const TrickyPatterns = () => {
 
             {/* Modal trợ giúp */}
             <HelpModal
-                ref={gameState.helpModalRef}
-                onClose={() => gameState.helpModalRef.current?.hide()}
+                ref={gameState.modalRefs.helpModalRef}
+                onClose={gameState.hideHelpModal}
             />
 
             {/* Modal tạm dừng */}
             <PauseModal
-                ref={gameState.pauseModalRef}
+                ref={gameState.modalRefs.pauseModalRef}
                 onContinue={gameState.handleContinue}
-                onRestart={gameState.handleRestart}
+                onRestart={gameState.restartLevel}
                 onHowToPlay={gameState.handleHowToPlay}
                 onLeaveGame={handleLeaveGame}
             />

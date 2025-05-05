@@ -1,4 +1,5 @@
-import { Color, PatternResult, GRID_DOT_CONFIG, COLORS, ROTATION_ANGLES } from '../constants/gameConstants';
+import { Color, GRID_DOT_CONFIG, COLORS, ROTATION_ANGLES } from '../constants/gameConstants';
+import { PatternData } from '../types/gameTypes';
 
 /**
  * Tạo lưới trống với kích thước cho trước
@@ -115,104 +116,34 @@ function randomColor(): Color {
 }
 
 /**
- * Thay đổi vị trí của một chấm để tạo ra sự khác biệt giữa hai lưới
- * @param grid Lưới gốc
- * @param colorMap Map màu gốc
- * @returns Lưới mới và map màu mới sau khi di chuyển một chấm
+ * Chuyển đổi grid và colorMap thành mảng màu sắc 2 chiều
+ * @param grid Lưới biểu diễn vị trí các chấm (0 hoặc 1)
+ * @param colorMap Map màu tương ứng với các vị trí có chấm
+ * @returns Mảng 2 chiều chứa màu sắc ('transparent' nếu không có chấm)
  */
-function swapOneDot(grid: number[][], colorMap: Record<string, Color>): [number[][], Record<string, Color>] {
+function convertToColorPattern(grid: number[][], colorMap: Record<string, Color>): string[][] {
     const size = grid.length;
-    const dots: [number, number][] = [];
+    const pattern = Array(size).fill(0).map(() => Array(size).fill('transparent'));
 
-    // Tìm tất cả các vị trí có chấm
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            if (grid[i][j] === 1) dots.push([i, j] as [number, number]);
+            if (grid[i][j] === 1) {
+                const key = `${i},${j}`;
+                pattern[i][j] = colorMap[key] || 'transparent';
+            }
         }
     }
 
-    if (dots.length === 0) return [grid, colorMap];
-
-    // Chọn ngẫu nhiên một chấm để di chuyển
-    const removePos = dots[Math.floor(Math.random() * dots.length)];
-
-    // Tìm các vị trí lân cận có thể di chuyển đến
-    const neighbors: [number, number][] = [
-        [removePos[0] - 1, removePos[1]],
-        [removePos[0] + 1, removePos[1]],
-        [removePos[0], removePos[1] - 1],
-        [removePos[0], removePos[1] + 1],
-        [removePos[0] - 1, removePos[1] - 1],
-        [removePos[0] - 1, removePos[1] + 1],
-        [removePos[0] + 1, removePos[1] - 1],
-        [removePos[0] + 1, removePos[1] + 1],
-    ].filter(([i, j]) => i >= 0 && j >= 0 && i < size && j < size && grid[i][j] === 0) as [number, number][];
-
-    // Nếu không tìm thấy vị trí lân cận, trả về lưới ban đầu
-    if (neighbors.length === 0) return [grid, colorMap];
-
-    // Chọn ngẫu nhiên một vị trí lân cận để đặt chấm
-    const addPos = neighbors[Math.floor(Math.random() * neighbors.length)];
-
-    // Tạo lưới mới với chấm đã được di chuyển
-    const newGrid = grid.map(row => [...row]);
-    newGrid[removePos[0]][removePos[1]] = 0;
-    newGrid[addPos[0]][addPos[1]] = 1;
-
-    // Cập nhật map màu
-    const newColorMap = { ...colorMap };
-    const color = newColorMap[`${removePos[0]},${removePos[1]}`] ?? randomColor();
-    newColorMap[`${addPos[0]},${addPos[1]}`] = color;
-    delete newColorMap[`${removePos[0]},${removePos[1]}`];
-
-    return [newGrid, newColorMap];
-}
-
-/**
- * Thay đổi màu của một chấm để tạo ra sự khác biệt giữa hai lưới
- * @param grid Lưới gốc
- * @param colorMap Map màu gốc
- * @returns Lưới mới và map màu mới sau khi thay đổi màu một chấm
- */
-function changeOneDotColor(grid: number[][], colorMap: Record<string, Color>): [number[][], Record<string, Color>] {
-    const size = grid.length;
-    const dots: [number, number][] = [];
-
-    // Tìm tất cả các vị trí có chấm
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-            if (grid[i][j] === 1) dots.push([i, j] as [number, number]);
-        }
-    }
-
-    if (dots.length === 0) return [grid, colorMap];
-
-    // Chọn ngẫu nhiên một chấm để thay đổi màu
-    const pos = dots[Math.floor(Math.random() * dots.length)];
-    const key = `${pos[0]},${pos[1]}`;
-
-    // Tạo map màu mới
-    const newColorMap = { ...colorMap };
-    const currentColor = newColorMap[key] || randomColor();
-
-    // Chọn màu mới khác với màu hiện tại
-    let newColor: Color;
-    do {
-        newColor = randomColor();
-    } while (newColor === currentColor);
-
-    newColorMap[key] = newColor;
-
-    return [grid.map(row => [...row]), newColorMap];
+    return pattern;
 }
 
 /**
  * Tạo mẫu cho một cấp độ cụ thể
  * @param level Cấp độ (1-10)
  * @param questionIndex Chỉ số câu hỏi trong cấp độ (0-6 cho 7 câu hỏi mỗi cấp độ)
- * @returns Kết quả mẫu cho cấp độ đã chọn
+ * @returns PatternData - Kết quả mẫu cho cấp độ đã chọn
  */
-export function generatePatternForLevel(level: number, questionIndex: number = 0): PatternResult {
+export function generatePatternForLevel(level: number, questionIndex: number = 0): PatternData {
     console.log(`Generating pattern for level ${level}, question index ${questionIndex}`);
 
     // Kiểm tra tính hợp lệ của cấp độ và chỉ số câu hỏi
@@ -224,9 +155,6 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
     }
 
     // Tính toán chỉ số cấu hình dựa trên level
-    // Đảm bảo mỗi level có một dải câu hỏi cố định
-    // Level 1 bắt đầu từ chỉ số 0 của GRID_DOT_CONFIG
-    // Mỗi level sau đó bắt đầu từ chỉ số level trước đó + 1
     const startIndexForLevel = (level - 1);
     const configIndex = startIndexForLevel + questionIndex;
 
@@ -251,6 +179,9 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
     // Quyết định hai lưới giống nhau hay khác nhau
     const isSame = Math.random() < 0.5;
 
+    // Lưu vị trí khác biệt nếu có
+    const differenceCoordinates: number[][] = [];
+
     let gridB: number[][];
     let colorMapB: Record<string, Color>;
 
@@ -259,7 +190,62 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
         gridB = gridA.map(row => [...row]);
         colorMapB = { ...colorMapA };
     } else {
-        [gridB, colorMapB] = swapOneDot(gridA, colorMapA);
+        // Tìm một vị trí để thay đổi
+        const dots: [number, number][] = [];
+
+        // Tìm tất cả các vị trí có chấm
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (gridA[i][j] === 1) dots.push([i, j] as [number, number]);
+            }
+        }
+
+        if (dots.length > 0) {
+            // Chọn ngẫu nhiên một chấm để di chuyển
+            const removeIndex = Math.floor(Math.random() * dots.length);
+            const removePos = dots[removeIndex];
+
+            // Tìm các vị trí lân cận có thể di chuyển đến
+            const neighbors: [number, number][] = [
+                [removePos[0] - 1, removePos[1]],
+                [removePos[0] + 1, removePos[1]],
+                [removePos[0], removePos[1] - 1],
+                [removePos[0], removePos[1] + 1],
+                [removePos[0] - 1, removePos[1] - 1],
+                [removePos[0] - 1, removePos[1] + 1],
+                [removePos[0] + 1, removePos[1] - 1],
+                [removePos[0] + 1, removePos[1] + 1],
+            ].filter(([i, j]) => i >= 0 && j >= 0 && i < gridSize && j < gridSize && gridA[i][j] === 0) as [number, number][];
+
+            if (neighbors.length > 0) {
+                // Chọn ngẫu nhiên một vị trí lân cận để đặt chấm
+                const addIndex = Math.floor(Math.random() * neighbors.length);
+                const addPos = neighbors[addIndex];
+
+                // Lưu lại vị trí thay đổi để hiển thị chênh lệch nếu cần
+                differenceCoordinates.push(removePos);
+                differenceCoordinates.push(addPos);
+
+                // Tạo lưới mới với chấm đã được di chuyển
+                gridB = gridA.map(row => [...row]);
+                gridB[removePos[0]][removePos[1]] = 0;
+                gridB[addPos[0]][addPos[1]] = 1;
+
+                // Cập nhật map màu
+                colorMapB = { ...colorMapA };
+                const color = colorMapA[`${removePos[0]},${removePos[1]}`] || randomColor();
+                delete colorMapB[`${removePos[0]},${removePos[1]}`];
+                colorMapB[`${addPos[0]},${addPos[1]}`] = color;
+            } else {
+                // Không tìm thấy vị trí lân cận, giữ nguyên grid
+                gridB = gridA.map(row => [...row]);
+                colorMapB = { ...colorMapA };
+            }
+        } else {
+            // Không có chấm nào trong grid, giữ nguyên
+            gridB = gridA.map(row => [...row]);
+            colorMapB = { ...colorMapA };
+        }
     }
 
     // Quyết định góc xoay cho lưới B dựa vào cấu hình cấp độ
@@ -269,14 +255,15 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
     const rotatedGridB = rotateGrid(gridB, rotation);
     const rotatedColorMapB = rotateColorMap(colorMapB, gridSize, rotation);
 
+    // Chuyển đổi grid và colorMap sang định dạng mảng màu 2 chiều
+    const pattern1 = convertToColorPattern(gridA, colorMapA);
+    const pattern2 = convertToColorPattern(rotatedGridB, rotatedColorMapB);
+
     return {
-        grid_size: gridSize,
-        num_dots: numDots,
-        grid_a: gridA,
-        grid_b: rotatedGridB,
+        pattern1,
+        pattern2,
         is_same: isSame,
-        rotation: rotation,
-        color_map_a: colorMapA,
-        color_map_b: rotatedColorMapB
+        difference_coordinates: differenceCoordinates.length > 0 ? differenceCoordinates : undefined,
+        rotation: rotation
     };
 }

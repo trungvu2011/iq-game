@@ -17,6 +17,9 @@ interface TopBarProps {
     onTimeUp?: () => void;
     shouldResetTimer?: boolean;
     isPaused?: boolean;
+    timeRemaining?: number;
+    formattedTime?: string;
+    timePercentage?: number;
 }
 
 /**
@@ -52,20 +55,31 @@ const InfoItem = ({
 
 /**
  * Component Timer - Quản lý và hiển thị thời gian còn lại
+ * Có thể sử dụng giá trị từ hook useTimer hoặc tự quản lý state
  */
 const Timer = ({
     isPaused,
     shouldReset,
     level,
-    onTimeUp
+    onTimeUp,
+    timeRemaining,
+    formattedTime
 }: {
     isPaused: boolean,
     shouldReset: boolean,
     level: number,
-    onTimeUp: () => void
+    onTimeUp: () => void,
+    timeRemaining?: number,
+    formattedTime?: string
 }) => {
+    // Nếu có formattedTime được truyền vào, sử dụng giá trị đó
+    if (formattedTime) {
+        return <InfoItem value={formattedTime} />;
+    }
+
+    // Nếu không có formattedTime, sử dụng logic cũ
     // Thời gian còn lại (giây)
-    const [seconds, setSeconds] = useState(60);
+    const [seconds, setSeconds] = useState(timeRemaining || 60);
     // Trạng thái hoạt động của bộ đếm thời gian
     const [timerActive, setTimerActive] = useState(true);
 
@@ -130,7 +144,10 @@ const TopBar = ({
     onHelp = () => { },
     onTimeUp = () => { },
     shouldResetTimer = false,
-    isPaused = false
+    isPaused = false,
+    timeRemaining,
+    formattedTime,
+    timePercentage
 }: TopBarProps) => {
     // Đảm bảo currentQuestion không vượt quá totalQuestions khi hiển thị
     const displayQuestion = Math.min(currentQuestion, totalQuestions);
@@ -151,6 +168,8 @@ const TopBar = ({
                     shouldReset={shouldResetTimer}
                     level={level}
                     onTimeUp={onTimeUp}
+                    timeRemaining={timeRemaining}
+                    formattedTime={formattedTime}
                 />
 
                 {/* Tiến trình câu hỏi */}
