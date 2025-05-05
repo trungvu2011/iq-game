@@ -112,8 +112,7 @@ export const useTrickyPatterns = () => {
      * Xử lý khi người chơi khởi động lại game
      */
     const handleRestart = useCallback(() => {
-        // Đặt lại trạng thái game nhưng giữ nguyên cấp độ hiện tại
-        generateNewPattern();
+        // Đặt lại toàn bộ trạng thái game cho cấp độ hiện tại
         setCurrentQuestion(1);
         setQuestionIndex(0);
         setCorrectAnswersInLevel(0);
@@ -128,9 +127,13 @@ export const useTrickyPatterns = () => {
         setShowLevelFailed(false);
         setShowResult(false);
 
+        // Tạo pattern mới cho câu hỏi đầu tiên của level hiện tại
+        const newPattern = generatePatternForLevel(level, 0);
+        setCurrentPattern(newPattern);
+
         // Khởi động lại bộ đếm thời gian
         setTimerResetTrigger(prev => !prev);
-    }, [level, generateNewPattern]);
+    }, [level]);
 
     /**
      * Xử lý khi người chơi muốn xem hướng dẫn

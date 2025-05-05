@@ -175,16 +175,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#FFFFFF',
+        backgroundColor: '#2d1b56', // tím đậm
         paddingVertical: 10,
         paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#E0E0E0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
         width: screenWidth,
     },
     // Nút biểu tượng
@@ -194,19 +187,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
-        backgroundColor: '#F0F0F0',
+        backgroundColor: '#322a4f', // tím nhạt
     },
     // Text biểu tượng
     iconText: {
         fontSize: 20,
+        color: 'white',
     },
     // Container khu vực thông tin
     infoContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         flex: 1,
-        marginHorizontal: 16,
-        gap: 40,
+        gap: 20,
     },
     // Mục thông tin
     infoItem: {
@@ -215,9 +208,9 @@ const styles = StyleSheet.create({
     },
     // Giá trị thông tin
     infoValue: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
-        color: '#333333',
+        color: 'white',
         textAlign: 'center',
     },
 });
