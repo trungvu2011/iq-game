@@ -66,7 +66,7 @@ function rotateGrid(grid: number[][], rotation: number): number[][] {
         for (let j = 0; j < size; j++) {
             if (rotation === 90) newGrid[j][size - i - 1] = grid[i][j];
             else if (rotation === 180) newGrid[size - i - 1][size - j - 1] = grid[i][j];
-            else if (rotation === 270) newGrid[size - j - 1][i] = grid[i][j];
+            else if (rotation === -90) newGrid[size - j - 1][i] = grid[i][j];
         }
     }
 
@@ -95,7 +95,7 @@ function rotateColorMap(colorMap: Record<string, Color>, gridSize: number, rotat
         } else if (rotation === 180) {
             ni = gridSize - 1 - i;
             nj = gridSize - 1 - j;
-        } else if (rotation === 270) {
+        } else if (rotation === -90) {
             ni = gridSize - 1 - j;
             nj = i;
         }
@@ -213,14 +213,24 @@ function changeOneDotColor(grid: number[][], colorMap: Record<string, Color>): [
  * @returns Kết quả mẫu cho cấp độ đã chọn
  */
 export function generatePatternForLevel(level: number, questionIndex: number = 0): PatternResult {
-    // Đảm bảo chỉ số câu hỏi nằm trong phạm vi hợp lệ (0-6)
-    const safeQuestionIndex = Math.max(0, Math.min(questionIndex, 6));
+    console.log(`Generating pattern for level ${level}, question index ${questionIndex}`);
 
-    // Sử dụng chỉ số câu hỏi trực tiếp làm chỉ số của GRID_DOT_CONFIG
-    // Chẳng hạn: câu hỏi 1 -> chỉ số 0, câu hỏi 2 -> chỉ số 1, v.v.
-    const configIndex = safeQuestionIndex;
+    // Kiểm tra tính hợp lệ của cấp độ và chỉ số câu hỏi
+    if (level < 1 || level > 10) {
+        throw new Error('Level must be between 1 and 10.');
+    }
+    if (questionIndex < 0 || questionIndex > 6) {
+        throw new Error('Question index must be between 0 and 6.');
+    }
 
-    // Đảm bảo chỉ số không vượt quá số lượng cấu hình
+    // Tính toán chỉ số cấu hình dựa trên level
+    // Đảm bảo mỗi level có một dải câu hỏi cố định
+    // Level 1 bắt đầu từ chỉ số 0 của GRID_DOT_CONFIG
+    // Mỗi level sau đó bắt đầu từ chỉ số level trước đó + 1
+    const startIndexForLevel = (level - 1);
+    const configIndex = startIndexForLevel + questionIndex;
+
+    // Đảm bảo chỉ số không vượt quá số lượng cấu hình có sẵn
     const safeConfigIndex = Math.min(configIndex, GRID_DOT_CONFIG.length - 1);
 
     // Lấy cấu hình tương ứng

@@ -37,6 +37,7 @@ export const useTrickyPatterns = () => {
     const [showHelp, setShowHelp] = useState(false);
     const [showPauseModal, setShowPauseModal] = useState(false);
     const [currentQuestion, setCurrentQuestion] = useState(1);
+    const [questionIndex, setQuestionIndex] = useState(0); // Add question index state to track pattern generation
     const [totalQuestions, setTotalQuestions] = useState(GAME_CONSTANTS.QUESTIONS_TO_COMPLETE_LEVEL);
     const [levelScore, setLevelScore] = useState(0);
     const [answerSelected, setAnswerSelected] = useState(false);
@@ -63,30 +64,33 @@ export const useTrickyPatterns = () => {
 
     // Tạo mẫu mới khi cấp độ thay đổi
     useEffect(() => {
-        // Tạo mẫu mới dựa trên cấp độ
-        generateNewPattern();
-
         // Reset các trạng thái
         setCorrectAnswersInLevel(0);
         setWrongAnswersInLevel(0);
         setTotalAttempts(0);
         setCurrentQuestion(1);
+        setQuestionIndex(0); // Reset question index when level changes
         setLevelScore(0);
+
+        // Tạo mẫu mới dựa trên cấp độ và index 0
+        const newPattern = generatePatternForLevel(level, 0);
+        setCurrentPattern(newPattern);
+        setShowResult(false);
     }, [level]);
 
     /**
-     * Tạo mẫu mới cho cấp độ hiện tại
+     * Tạo mẫu mới cho cấp độ hiện tại với index đã được cập nhật
      */
     const generateNewPattern = useCallback(() => {
         // Tạo mẫu mới cho cấp độ hiện tại sử dụng thuật toán cải tiến
         // Truyền chỉ số câu hỏi hiện tại (0-indexed) để chọn cấu hình phù hợp
-        const questionIndex = currentQuestion - 1;
+        console.log('level', level, 'questionIndex', questionIndex);
         const newPattern = generatePatternForLevel(level, questionIndex);
         setCurrentPattern(newPattern);
 
         // Reset trạng thái hiển thị kết quả
         setShowResult(false);
-    }, [level, currentQuestion]);
+    }, [level, questionIndex]);
 
     /**
      * Xử lý khi người chơi tạm dừng game
@@ -111,6 +115,7 @@ export const useTrickyPatterns = () => {
         // Đặt lại trạng thái game nhưng giữ nguyên cấp độ hiện tại
         generateNewPattern();
         setCurrentQuestion(1);
+        setQuestionIndex(0);
         setCorrectAnswersInLevel(0);
         setWrongAnswersInLevel(0);
         setTotalAttempts(0);
@@ -133,13 +138,6 @@ export const useTrickyPatterns = () => {
     const handleHowToPlay = useCallback(() => {
         setShowHelp(true);
         setShowPauseModal(false);
-    }, []);
-
-    /**
-     * Xử lý khi người chơi muốn xem trợ giúp
-     */
-    const handleHelp = useCallback(() => {
-        setShowHelp(true);
     }, []);
 
     /**
@@ -176,6 +174,7 @@ export const useTrickyPatterns = () => {
         setIsPaused(false);
         // Đặt lại với cùng cấp độ
         setCurrentQuestion(1);
+        setQuestionIndex(0);
         setCorrectAnswersInLevel(0);
         // Khởi động lại bộ đếm thời gian
         setTimerResetTrigger(prev => !prev);
@@ -202,9 +201,7 @@ export const useTrickyPatterns = () => {
         setIsPaused(false);
         // Cho phép trả lời lại
         setAnswerSelected(false);
-        // Tạo mẫu mới
-        generateNewPattern();
-    }, [generateNewPattern]);
+    }, []);
 
     /**
      * Xử lý khi người chơi trả lời
@@ -241,6 +238,10 @@ export const useTrickyPatterns = () => {
 
             // Tăng số câu hỏi hiện tại
             const nextQuestionNumber = currentQuestion + 1;
+            setCurrentQuestion(nextQuestionNumber);
+
+            // Tăng index câu hỏi cho mẫu tiếp theo
+            const nextQuestionIndex = questionIndex + 1;
 
             // Kiểm tra xem cấp độ đã hoàn thành chưa khi câu hỏi hiện tại vượt quá số câu tối thiểu
             if (nextQuestionNumber > GAME_CONSTANTS.MIN_QUESTIONS_TO_WIN) {
@@ -249,11 +250,15 @@ export const useTrickyPatterns = () => {
                     setIsPaused(true);
                 }, 1500); // Chờ hiển thị kết quả 1.5 giây trước khi hiện thông báo hoàn thành
             } else {
-                setCurrentQuestion(nextQuestionNumber);
-
+                // Cập nhật index câu hỏi cho mẫu tiếp theo
+                setQuestionIndex(nextQuestionIndex);
                 // Tạo mẫu mới sau một khoảng thời gian hiển thị kết quả
                 setTimeout(() => {
-                    generateNewPattern();
+                    // Tạo pattern mới với index câu hỏi đã được tăng lên
+                    const newPattern = generatePatternForLevel(level, nextQuestionIndex);
+                    setCurrentPattern(newPattern);
+                    setShowResult(false);
+
                     // Cho phép trả lời lại
                     setAnswerSelected(false);
                 }, 1500);
@@ -277,18 +282,25 @@ export const useTrickyPatterns = () => {
                 userAnswer: selectedAnswer
             });
 
+            // Giảm số câu hỏi hiện tại và question index, nhưng không thấp hơn 0
+            const nextQuestionNumber = Math.max(currentQuestion - 1, 1);
+            const nextQuestionIndex = Math.max(questionIndex - 1, 0);
+
+            setCurrentQuestion(nextQuestionNumber);
+            setQuestionIndex(nextQuestionIndex);
+
             // Sau khi hiển thị kết quả một khoảng thời gian, tạo mẫu mới
             setTimeout(() => {
-                // Chuẩn bị câu hỏi tiếp theo (sẽ được hiển thị sau khi đóng modal)
-                const nextQuestionNumber = Math.max(currentQuestion - 1, 1);
-                setCurrentQuestion(nextQuestionNumber);
+                // Tạo mẫu mới với index câu hỏi đã được giảm đi
+                const newPattern = generatePatternForLevel(level, nextQuestionIndex);
+                setCurrentPattern(newPattern);
+                setShowResult(false);
 
-                // Tạo mẫu mới và cho phép trả lời lại
-                generateNewPattern();
+                // Cho phép trả lời lại
                 setAnswerSelected(false);
             }, 1500);
         }
-    }, [answerSelected, isPaused, currentPattern, level, currentQuestion, generateNewPattern]);
+    }, [answerSelected, isPaused, currentPattern, level, currentQuestion, questionIndex]);
 
     return {
         // Trạng thái
@@ -319,7 +331,6 @@ export const useTrickyPatterns = () => {
         handleContinue,
         handleRestart,
         handleHowToPlay,
-        handleHelp,
         handleTimeUp,
         handleLevelComplete,
         handleLevelFailed,

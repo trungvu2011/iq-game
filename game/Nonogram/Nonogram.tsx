@@ -40,7 +40,6 @@ const Nonogram = () => {
 
     // Sử dụng custom hook để xử lý thao tác vuốt
     const panResponder = usePanGesture(gameState);
-    console.log('Game Status:', gameStatus);
 
     return (
         <View style={styles.container} key={renderKey}>

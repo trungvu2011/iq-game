@@ -5,7 +5,7 @@
 /**
  * Định nghĩa kiểu màu sắc cho các chấm
  */
-export type Color = 'red' | 'blue' | 'green' | '#ADD8E6' | '#90EE90' | '#FFA07A' | '#FFD700' | '#FF00FF' | '#00FFFF' | '#FFC0CB';
+export type Color = 'red' | 'blue' | 'green' | '#ADD8E6' | '#90EE90';
 
 /**
  * Interface định nghĩa kết quả của việc tạo mẫu
@@ -27,22 +27,22 @@ export interface PatternResult {
  * Câu hỏi 1 sử dụng chỉ số 0, câu hỏi 2 sử dụng chỉ số 1, v.v.
  */
 export const GRID_DOT_CONFIG: [number, number][] = [
-    [3, 3],   // Câu hỏi 1
-    [3, 4],   // Câu hỏi 2
-    [4, 5],   // Câu hỏi 3
-    [4, 6],   // Câu hỏi 4
-    [4, 7],   // Câu hỏi 5
-    [5, 8],   // Câu hỏi 6
-    [5, 9],   // Câu hỏi 7
-    [5, 10],  // Dự phòng
-    [6, 11],  // Dự phòng
-    [6, 12],  // Dự phòng
-    [6, 13],  // Dự phòng
-    [6, 14],  // Dự phòng
-    [7, 15],  // Dự phòng
-    [7, 16],  // Dự phòng
-    [7, 17],  // Dự phòng
-    [8, 18],  // Dự phòng
+    [2, 2], // Câu hỏi 1
+    [3, 3], // Câu hỏi 2
+    [4, 3], // Câu hỏi 3
+    [4, 4], // Câu hỏi 4
+    [5, 5], // Câu hỏi 5
+    [5, 5], // Câu hỏi 6
+    [5, 5], // Câu hỏi 7
+    [5, 5], // Câu hỏi 8
+    [5, 6], // Câu hỏi 9
+    [6, 6], // Câu hỏi 10
+    [6, 7], // Câu hỏi 11
+    [6, 8], // Câu hỏi 12
+    [7, 8], // Câu hỏi 13
+    [7, 9], // Câu hỏi 14
+    [8, 10], // Câu hỏi 15
+    [8, 11], // Câu hỏi 16
 ];
 
 /**
@@ -54,11 +54,6 @@ export const COLORS: Color[] = [
     'green',
     '#ADD8E6', // Light blue
     '#90EE90', // Light green
-    '#FFA07A', // Light salmon
-    '#FFD700', // Gold
-    '#FF00FF', // Magenta
-    '#00FFFF', // Cyan
-    '#FFC0CB', // Pink
 ];
 
 /**

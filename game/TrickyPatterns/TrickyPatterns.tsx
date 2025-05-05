@@ -40,7 +40,6 @@ const TrickyPatterns = () => {
                     score={gameState.levelScore}
                     level={gameState.level}
                     onPause={gameState.handlePause}
-                    onHelp={gameState.handleHelp}
                     onTimeUp={gameState.handleTimeUp}
                     shouldResetTimer={gameState.timerResetTrigger}
                     isPaused={gameState.isPaused}

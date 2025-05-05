@@ -132,6 +132,9 @@ const TopBar = ({
     shouldResetTimer = false,
     isPaused = false
 }: TopBarProps) => {
+    // Đảm bảo currentQuestion không vượt quá totalQuestions khi hiển thị
+    const displayQuestion = Math.min(currentQuestion, totalQuestions);
+
     return (
         <View style={styles.container}>
             {/* Trái: Nút tạm dừng */}
@@ -151,7 +154,7 @@ const TopBar = ({
                 />
 
                 {/* Tiến trình câu hỏi */}
-                <InfoItem value={`${currentQuestion}/${totalQuestions}`} />
+                <InfoItem value={`${displayQuestion}/${totalQuestions}`} />
 
                 {/* Điểm số */}
                 <InfoItem value={score} />

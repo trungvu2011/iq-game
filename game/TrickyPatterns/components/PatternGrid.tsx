@@ -55,8 +55,8 @@ const PatternGrid = ({
                 {grid.map((row, rowIndex) => (
                     <View key={`row-${rowIndex}`} style={styles.gridRow}>
                         {row.map((cell, colIndex) => {
-                            const key = `(${rowIndex},${colIndex})`;
-                            const color = cell === 1 ? colorMap[key] || '#000' : 'transparent';
+                            const key = `${rowIndex},${colIndex}`;
+                            const color = colorMap[key] || '#FFFFFF'; // Mặc định là trắng nếu không có màu tương ứng
 
                             return (
                                 <View key={`cell-${rowIndex}-${colIndex}`} style={styles.gridCell}>
@@ -69,24 +69,6 @@ const PatternGrid = ({
                     </View>
                 ))}
             </Animated.View>
-
-            {/* Hiển thị kết quả nổi lên trên grid */}
-            {showResult && (
-                <View style={styles.resultOverlay}>
-                    <View style={[
-                        styles.dot,
-                        {
-                            backgroundColor: isCorrect ? 'green' : 'red',
-                            width: size * 0.4,
-                            height: size * 0.4,
-                        }
-                    ]}>
-                        <Text style={styles.resultText}>
-                            {isCorrect ? '✔️' : '❌'}
-                        </Text>
-                    </View>
-                </View>
-            )}
         </View>
     );
 };
