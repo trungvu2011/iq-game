@@ -1,5 +1,6 @@
 import { View, StyleSheet, Dimensions, Animated, Text } from 'react-native'
 import React, { useRef, useEffect } from 'react'
+import GridBackground from './GridBackground';
 
 // Lấy kích thước màn hình
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -52,6 +53,12 @@ const PatternGrid = ({
                 styles.gridContainer,
                 { transform: [{ rotate: spin }] }
             ]}>
+                {/* Nền SVG */}
+                <View style={StyleSheet.absoluteFill}>
+                    <GridBackground />
+                </View>
+
+                {/* Các chấm màu */}
                 {grid.map((row, rowIndex) => (
                     <View key={`row-${rowIndex}`} style={styles.gridRow}>
                         {row.map((cell, colIndex) => {
@@ -84,7 +91,6 @@ const styles = StyleSheet.create({
     gridContainer: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#FFFFFF',
         borderRadius: 8,
         padding: 5,
         shadowColor: '#000',
@@ -94,6 +100,8 @@ const styles = StyleSheet.create({
         elevation: 5,
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
+        backgroundColor: '#282047'
     },
     // Grid row
     gridRow: {
@@ -107,8 +115,6 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        borderWidth: 0.5,
-        borderColor: '#E0E0E0',
         padding: 2,
     },
     // Dot inside cell

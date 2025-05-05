@@ -88,16 +88,21 @@ const TrickyPatterns = () => {
                     // Hiển thị màn hình chơi game chính
                     <>
                         {gameState.currentPattern && (
-                            <PatternComparison
-                                gridA={gameState.currentPattern.grid_a}
-                                colorMapA={gameState.currentPattern.color_map_a}
-                                gridB={gameState.currentPattern.grid_b}
-                                colorMapB={gameState.currentPattern.color_map_b}
-                                rotation={gameState.currentPattern.rotation}
-                                showResult={gameState.showResult}
-                                isCorrectAnswer={gameState.isCorrectAnswer}
-                                gridSize={gameState.currentPattern.grid_size}
-                            />
+                            <>
+                                <Text style={styles.instructionText}>
+                                    Will rotating the right pattern make it match the left?
+                                </Text>
+                                <PatternComparison
+                                    gridA={gameState.currentPattern.grid_a}
+                                    colorMapA={gameState.currentPattern.color_map_a}
+                                    gridB={gameState.currentPattern.grid_b}
+                                    colorMapB={gameState.currentPattern.color_map_b}
+                                    rotation={gameState.currentPattern.rotation}
+                                    showResult={gameState.showResult}
+                                    isCorrectAnswer={gameState.isCorrectAnswer}
+                                    gridSize={gameState.currentPattern.grid_size}
+                                />
+                            </>
                         )}
 
                         {/* Hiển thị các nút trả lời */}
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
     // Container chính
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+        backgroundColor: '#3a2c6a',
         paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0,
     },
     // Container cho thanh trạng thái trên cùng
@@ -146,6 +151,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingVertical: 20,
+    },
+    // Text hướng dẫn
+    instructionText: {
+        color: '#fff',
+        fontSize: 20,
+        marginBottom: 10,
+        textAlign: 'center',
+        backgroundColor: '#282047',
+        marginLeft: 40,
+        marginRight: 40,
     },
 });
 
