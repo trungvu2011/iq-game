@@ -10,6 +10,14 @@ export const useTimer = () => {
   const { state, dispatch } = useGameContext();
   const { isPaused, timerResetTrigger, level } = state;
 
+  // Sử dụng useRef để lưu trữ trạng thái isPaused mới nhất
+  const isPausedRef = useRef(isPaused);
+
+  // Cập nhật ref khi isPaused thay đổi
+  useEffect(() => {
+    isPausedRef.current = isPaused;
+  }, [isPaused]);
+
   // State để lưu thời gian còn lại (tính bằng giây)
   const [timeRemaining, setTimeRemaining] = useState<number>(GAME_CONSTANTS.LEVEL_TIME_LIMITS);
 
@@ -33,14 +41,17 @@ export const useTimer = () => {
 
     if (!isPaused) {
       timerId = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            // Khi hết thời gian, thông báo cho game biết
-            dispatch({ type: ActionTypes.TIME_UP });
-            return 0;
-          }
-          return prev - 1;
-        });
+        // Kiểm tra lại trạng thái tạm dừng mới nhất trước khi cập nhật thời gian
+        if (!isPausedRef.current) {
+          setTimeRemaining(prev => {
+            if (prev <= 1) {
+              // Khi hết thời gian, thông báo cho game biết
+              dispatch({ type: ActionTypes.TIME_UP });
+              return 0;
+            }
+            return prev - 1;
+          });
+        }
       }, 1000);
     }
 
@@ -72,6 +83,7 @@ export const useTimer = () => {
     timeRemaining,
     formattedTime: formatTime(timeRemaining),
     timePercentage: calculateTimePercentage(),
-    resetTimer
+    resetTimer,
+    isPaused // Thêm trả về isPaused để dễ dàng debug
   };
 };
