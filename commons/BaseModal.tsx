@@ -48,6 +48,7 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
             transparent={transparent}
             visible={showModal}
             statusBarTranslucent
+            animationType='fade'
             onRequestClose={
                 onRequestClose ? onRequestClose : () => setShowModal(false)
             }
@@ -65,6 +66,11 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
                         backgroundColor: '#00000090',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        position: 'absolute',
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
                     },
                     modelStyle,
                 ]}>
@@ -77,6 +83,7 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
                             borderRadius: 10,
                             width: '80%',
                             maxWidth: 400,
+                            alignSelf: 'center',
                         },
                         bodyStyle,
                         !transparent && {

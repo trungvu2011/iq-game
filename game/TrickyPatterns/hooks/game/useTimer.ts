@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useGameContext } from '../../context/GameContext';
 import { ActionTypes } from '../../types/gameTypes';
 import { GAME_CONSTANTS } from '../../constants/gameConstants';
@@ -10,13 +10,8 @@ export const useTimer = () => {
   const { state, dispatch } = useGameContext();
   const { isPaused, timerResetTrigger, level } = state;
 
-  // Hàm để lấy thời gian giới hạn cho level hiện tại
-  const getLevelTimeLimit = useCallback((currentLevel: number): number => {
-    return GAME_CONSTANTS.LEVEL_TIME_LIMITS;
-  }, []);
-
   // State để lưu thời gian còn lại (tính bằng giây)
-  const [timeRemaining, setTimeRemaining] = useState<number>(() => getLevelTimeLimit(level));
+  const [timeRemaining, setTimeRemaining] = useState<number>(GAME_CONSTANTS.LEVEL_TIME_LIMITS);
 
   /**
    * Reset bộ đếm thời gian
@@ -25,13 +20,15 @@ export const useTimer = () => {
     dispatch({ type: ActionTypes.RESET_TIMER });
   }, [dispatch]);
 
-  // Effect để xử lý bộ đếm thời gian
+  // Effect để xử lý việc reset timer khi level thay đổi hoặc reset được kích hoạt
   useEffect(() => {
     // Đặt lại thời gian ban đầu khi level thay đổi hoặc timer được reset
-    const initialTime = getLevelTimeLimit(level);
-    setTimeRemaining(initialTime);
+    setTimeRemaining(GAME_CONSTANTS.LEVEL_TIME_LIMITS);
+  }, [level, timerResetTrigger]);
 
-    // Khi không tạm dừng, tiếp tục đếm ngược
+  // Effect riêng biệt để xử lý đếm ngược
+  useEffect(() => {
+    // Chỉ chạy đếm ngược khi không tạm dừng
     let timerId: NodeJS.Timeout | null = null;
 
     if (!isPaused) {
@@ -51,7 +48,7 @@ export const useTimer = () => {
     return () => {
       if (timerId) clearInterval(timerId);
     };
-  }, [level, isPaused, timerResetTrigger, dispatch, getLevelTimeLimit]);
+  }, [isPaused, dispatch]);
 
   /**
    * Chuyển đổi thời gian từ giây sang định dạng mm:ss
@@ -66,10 +63,10 @@ export const useTimer = () => {
   /**
    * Tính phần trăm thời gian còn lại so với tổng thời gian
    */
-  const calculateTimePercentage = useCallback((): number => {
-    const totalTime = getLevelTimeLimit(level);
+  const calculateTimePercentage = (): number => {
+    const totalTime = GAME_CONSTANTS.LEVEL_TIME_LIMITS;
     return (timeRemaining / totalTime) * 100;
-  }, [timeRemaining, level, getLevelTimeLimit]);
+  };
 
   return {
     timeRemaining,

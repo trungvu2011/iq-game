@@ -144,7 +144,7 @@ function convertToColorPattern(grid: number[][], colorMap: Record<string, Color>
  * @returns PatternData - Kết quả mẫu cho cấp độ đã chọn
  */
 export function generatePatternForLevel(level: number, questionIndex: number = 0): PatternData {
-    console.log(`Generating pattern for level ${level}, question index ${questionIndex}`);
+    // console.log(`Generating pattern for level ${level}, question index ${questionIndex}`);
 
     // Kiểm tra tính hợp lệ của cấp độ và chỉ số câu hỏi
     if (level < 1 || level > 10) {

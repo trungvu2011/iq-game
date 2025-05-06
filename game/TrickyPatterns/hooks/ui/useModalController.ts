@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import { useGameContext } from '../../context/GameContext';
 import { ActionTypes } from '../../types/gameTypes';
 
@@ -11,41 +10,41 @@ export const useModalController = () => {
   /**
    * Đóng modal kết quả câu trả lời
    */
-  const closeAnswerModal = useCallback(() => {
+  const closeAnswerModal = () => {
     dispatch({ type: ActionTypes.CLOSE_ANSWER_MODAL });
-  }, [dispatch]);
+  };
 
   /**
    * Hiển thị modal hướng dẫn
    */
-  const showHelpModal = useCallback(() => {
+  const showHelpModal = () => {
     modalRefs.helpModalRef.current?.show();
     dispatch({ type: ActionTypes.PAUSE_GAME });
-  }, [modalRefs.helpModalRef, dispatch]);
+  };
 
   /**
    * Ẩn modal hướng dẫn
    */
-  const hideHelpModal = useCallback(() => {
+  const hideHelpModal = () => {
     modalRefs.helpModalRef.current?.hide();
     dispatch({ type: ActionTypes.CONTINUE_GAME });
-  }, [modalRefs.helpModalRef, dispatch]);
+  };
 
   /**
    * Hiển thị modal tạm dừng
    */
-  const showPauseModal = useCallback(() => {
+  const showPauseModal = () => {
     modalRefs.pauseModalRef.current?.show();
     dispatch({ type: ActionTypes.PAUSE_GAME });
-  }, [modalRefs.pauseModalRef, dispatch]);
+  };
 
   /**
    * Ẩn modal tạm dừng
    */
-  const hidePauseModal = useCallback(() => {
+  const hidePauseModal = () => {
     modalRefs.pauseModalRef.current?.hide();
     dispatch({ type: ActionTypes.CONTINUE_GAME });
-  }, [modalRefs.pauseModalRef, dispatch]);
+  };
 
   return {
     closeAnswerModal,

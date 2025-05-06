@@ -46,10 +46,16 @@ const PatternGrid = ({
     }, [showResult]);
 
     // Calculate the interpolated rotation value
+    // This is fixed to correctly handle the rotation direction
     const spin = rotateAnim.interpolate({
         inputRange: [0, 1],
         outputRange: ['0deg', `${-rotation}deg`]
     });
+
+    // Handle null or undefined pattern
+    if (!pattern || pattern.length === 0) {
+        return <View style={styles.gridWrapper} />;
+    }
 
     return (
         <View style={styles.gridWrapper}>

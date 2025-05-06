@@ -13,7 +13,7 @@ export const useGameControl = () => {
   /**
    * Xử lý khi người dùng tạm dừng game
    */
-  const handlePause = useCallback(() => {
+  const handlePause = () => {
     if (state.isPaused) {
       modalRefs.pauseModalRef.current?.hide();
       dispatch({ type: ActionTypes.CONTINUE_GAME });
@@ -21,37 +21,37 @@ export const useGameControl = () => {
       modalRefs.pauseModalRef.current?.show();
       dispatch({ type: ActionTypes.PAUSE_GAME });
     }
-  }, [state.isPaused, modalRefs.pauseModalRef, dispatch]);
+  };
 
   /**
    * Tiếp tục game sau khi tạm dừng
    */
-  const handleContinue = useCallback(() => {
+  const handleContinue = () => {
     modalRefs.pauseModalRef.current?.hide();
     dispatch({ type: ActionTypes.CONTINUE_GAME });
-  }, [modalRefs.pauseModalRef, dispatch]);
+  };
 
   /**
    * Xử lý khi người dùng muốn xem hướng dẫn
    */
-  const handleHowToPlay = useCallback(() => {
+  const handleHowToPlay = () => {
     modalRefs.helpModalRef.current?.show();
     modalRefs.pauseModalRef.current?.hide();
     dispatch({ type: ActionTypes.PAUSE_GAME });
-  }, [modalRefs.helpModalRef, modalRefs.pauseModalRef, dispatch]);
+  };
 
   /**
    * Xử lý khi người dùng đóng modal hướng dẫn
    */
-  const handleCloseHelpModal = useCallback(() => {
+  const handleCloseHelpModal = () => {
     modalRefs.helpModalRef.current?.hide();
     dispatch({ type: ActionTypes.CONTINUE_GAME });
-  }, [modalRefs.helpModalRef, dispatch]);
+  };
 
   /**
    * Xử lý khi người dùng trả lời câu hỏi
    */
-  const handleAnswer = useCallback((selectedAnswer: boolean) => {
+  const handleAnswer = (selectedAnswer: boolean) => {
     // Ngăn việc trả lời khi game đang tạm dừng hoặc đã chọn câu trả lời
     if (state.isPaused || state.answerSelected) return;
 
@@ -59,7 +59,7 @@ export const useGameControl = () => {
       type: ActionTypes.ANSWER_QUESTION,
       payload: selectedAnswer
     });
-  }, [state.isPaused, state.answerSelected, dispatch]);
+  };
 
   // Xử lý hiển thị thông báo hoàn thành level và tạo pattern mới sau khi trả lời
   useEffect(() => {
