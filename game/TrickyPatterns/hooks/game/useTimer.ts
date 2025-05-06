@@ -84,6 +84,6 @@ export const useTimer = () => {
     formattedTime: formatTime(timeRemaining),
     timePercentage: calculateTimePercentage(),
     resetTimer,
-    isPaused // Thêm trả về isPaused để dễ dàng debug
+    isPaused
   };
 };

@@ -1,5 +1,9 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native'
 import React, { useState, useEffect } from 'react'
+import { useTimer } from '../hooks/game/useTimer';
+import HelpModal from './HelpModal';
+import { useGameContext } from '../context/GameContext';
+import { ActionTypes } from '../types/gameTypes';
 
 // Lấy chiều rộng màn hình
 const screenWidth = Dimensions.get('window').width;
@@ -99,23 +103,23 @@ const Timer = ({
                     if (newSeconds <= 0) {
                         // Xóa interval khi hết thời gian
                         clearInterval(interval);
-                        // Gọi callback onTimeUp
+                        // Gọi callback khi hết thời gian
                         onTimeUp();
-                        // Đặt lại bộ đếm thời gian cho cấp độ tiếp theo
-                        return 60;
+                        return 0;
                     }
                     return newSeconds;
                 });
             }, 1000);
         }
 
-        // Xóa interval khi component bị hủy
-        return () => clearInterval(interval);
+        return () => {
+            if (interval) clearInterval(interval);
+        };
     }, [timerActive, onTimeUp]);
 
-    // Đặt lại bộ đếm thời gian khi cấp độ thay đổi hoặc shouldReset là true
+    // Đặt lại bộ đếm thời gian khi cấp độ thay đổi
     useEffect(() => {
-        setSeconds(60);
+        setSeconds(60); // Đặt lại thời gian là 60 giây cho cấp độ mới
         // Đảm bảo bộ đếm thời gian hoạt động khi đặt lại
         setTimerActive(true);
     }, [level, shouldReset]);
@@ -144,13 +148,28 @@ const TopBar = ({
     onHelp = () => { },
     onTimeUp = () => { },
     shouldResetTimer = false,
-    isPaused = false,
-    timeRemaining,
-    formattedTime,
-    timePercentage
 }: TopBarProps) => {
     // Đảm bảo currentQuestion không vượt quá totalQuestions khi hiển thị
     const displayQuestion = Math.min(currentQuestion, totalQuestions);
+
+    // Lấy modalRefs và dispatch từ GameContext để sử dụng chung với các hoạt động khác
+    const { modalRefs, dispatch } = useGameContext();
+
+    // Sử dụng hook useTimer
+    const { timeRemaining, formattedTime, resetTimer, isPaused } = useTimer();
+
+    // Hiển thị modal trợ giúp và tạm dừng game
+    const handleShowHelpModal = () => {
+        modalRefs.helpModalRef.current?.show();
+        dispatch({ type: ActionTypes.PAUSE_GAME }); // Đảm bảo game tạm dừng khi mở help modal
+        onHelp(); // Gọi callback từ props để thực hiện các tác vụ bổ sung
+    };
+
+    // Xử lý đóng modal help và tiếp tục đếm thời gian
+    const handleCloseHelpModal = () => {
+        modalRefs.helpModalRef.current?.hide();
+        dispatch({ type: ActionTypes.CONTINUE_GAME }); // Đảm bảo game tiếp tục sau khi đóng modal
+    };
 
     return (
         <View style={styles.container}>
@@ -182,7 +201,13 @@ const TopBar = ({
             {/* Phải: Nút trợ giúp */}
             <IconButton
                 icon="❓"
-                onPress={onHelp}
+                onPress={handleShowHelpModal}
+            />
+
+            {/* Modal trợ giúp - sẽ sử dụng ref từ GameContext */}
+            <HelpModal
+                ref={modalRefs.helpModalRef}
+                onClose={handleCloseHelpModal}
             />
         </View>
     )

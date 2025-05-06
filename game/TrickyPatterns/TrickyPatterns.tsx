@@ -2,7 +2,6 @@ import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text } fro
 import React from 'react'
 import TopBar from './components/TopBar'
 import AnswerButtons from './components/AnswerButtons'
-import HelpModal from './components/HelpModal'
 import PauseModal from './components/PauseModal'
 import GameMessage from './components/GameMessage'
 import PatternComparison from './components/PatternComparison'
@@ -50,13 +49,8 @@ const TrickyPatternsContent = () => {
                     score={gameState.levelScore}
                     level={gameState.level}
                     onPause={gameState.handlePause}
-                    onHelp={gameState.showHelpModal}
                     onTimeUp={gameState.handleTimeUp}
                     shouldResetTimer={gameState.timerResetTrigger}
-                    isPaused={gameState.isPaused}
-                    timeRemaining={gameState.timeRemaining}
-                    formattedTime={gameState.formattedTime}
-                    timePercentage={gameState.timePercentage}
                 />
             </View>
 
@@ -126,11 +120,7 @@ const TrickyPatternsContent = () => {
                 )}
             </View>
 
-            {/* Modal trợ giúp */}
-            <HelpModal
-                ref={gameState.modalRefs.helpModalRef}
-                onClose={gameState.hideHelpModal}
-            />
+
 
             {/* Modal tạm dừng */}
             <PauseModal

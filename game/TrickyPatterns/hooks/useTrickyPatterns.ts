@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { usePatternGenerator } from './game/usePatternGenerator';
 import { useLevelManager } from './game/useLevelManager';
 import { useScoreCalculator } from './game/useScoreCalculator';
-import { useTimer } from './game/useTimer';
 import { useGameControl } from './game/useGameControl';
 import { useModalController } from './ui/useModalController';
 import { useGameContext } from '../context/GameContext';
@@ -19,7 +18,6 @@ export const useTrickyPatterns = () => {
   const patternGenerator = usePatternGenerator();
   const levelManager = useLevelManager();
   const scoreCalculator = useScoreCalculator();
-  const timer = useTimer();
   const gameControl = useGameControl();
   const modalController = useModalController();
 
@@ -137,7 +135,6 @@ export const useTrickyPatterns = () => {
     ...scoreCalculator,
 
     // Timer methods
-    ...timer,
     handleTimeUp: levelManager.timeUp,
 
     // Game control methods (đã loại bỏ các thuộc tính trùng lặp)
