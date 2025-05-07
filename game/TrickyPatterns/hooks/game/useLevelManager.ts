@@ -17,13 +17,6 @@ export const useLevelManager = () => {
   };
 
   /**
-   * Đánh dấu level hiện tại thất bại và khởi động lại
-   */
-  const failLevel = () => {
-    dispatch({ type: ActionTypes.HIDE_LEVEL_FAILED });
-  };
-
-  /**
    * Đánh dấu hoàn thành toàn bộ game
    */
   const completeGame = () => {
@@ -34,9 +27,10 @@ export const useLevelManager = () => {
 
   /**
    * Khởi động lại level hiện tại
+   * Cũng được sử dụng khi level thất bại
    */
   const restartLevel = () => {
-    // Đóng modal trước khi restart
+    // Đóng modal trước khi restart nếu đang mở
     modalRefs.pauseModalRef.current?.hide();
     dispatch({ type: ActionTypes.RESTART_GAME });
   };
@@ -50,7 +44,6 @@ export const useLevelManager = () => {
 
   return {
     completeLevel,
-    failLevel,
     completeGame,
     restartLevel,
     timeUp,

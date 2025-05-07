@@ -67,9 +67,9 @@ const GameMessage = ({
             <View style={styles.messageContainer}>
                 <Text style={styles.titleText}>{title}</Text>
                 <Text style={styles.messageText}>Bạn đã hoàn thành tất cả {maxLevel} cấp độ!</Text>
-                <View style={styles.nextLevelButton}>
-                    <Text style={styles.nextLevelButtonText} onPress={onAction}>{button}</Text>
-                </View>
+                <TouchableOpacity style={styles.button} onPress={onAction}>
+                    <Text style={styles.buttonText}>{button}</Text>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -82,9 +82,9 @@ const GameMessage = ({
             <Text style={styles.messageText}>Correct: {correctAnswers}</Text>
             <Text style={styles.messageText}>Incorrect: {wrongAnswers}</Text>
             <Text style={styles.messageText}>Accurancy: {successRate}%</Text>
-            <View style={styles.nextLevelButton}>
-                <Text style={styles.nextLevelButtonText} onPress={onAction}>{button}</Text>
-            </View>
+            <TouchableOpacity style={styles.button} onPress={onAction}>
+                <Text style={styles.buttonText}>{button}</Text>
+            </TouchableOpacity>
         </View>
     );
 };
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     // Nút hành động
-    nextLevelButton: {
+    button: {
         marginTop: 20,
         backgroundColor: '#4CAF50',
         borderRadius: 10,
@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
     // Text cho nút hành động
-    nextLevelButtonText: {
+    buttonText: {
         color: '#FFFFFF',
         fontSize: 18,
         fontWeight: 'bold',

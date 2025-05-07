@@ -12,6 +12,10 @@ export const useTimer = () => {
 
   // Sử dụng useRef để lưu trữ trạng thái isPaused mới nhất
   const isPausedRef = useRef(isPaused);
+  // Thêm ref để theo dõi thời điểm reset timer
+  const justResetRef = useRef(false);
+  // Ref để theo dõi thời gian còn lại
+  const timeRemainingRef = useRef(GAME_CONSTANTS.LEVEL_TIME_LIMITS);
 
   // Cập nhật ref khi isPaused thay đổi
   useEffect(() => {
@@ -26,12 +30,25 @@ export const useTimer = () => {
    */
   const resetTimer = useCallback(() => {
     dispatch({ type: ActionTypes.RESET_TIMER });
+    justResetRef.current = true; // Đánh dấu timer vừa được reset
+
+    // Đặt lại cờ sau 1 giây để tránh kích hoạt TIME_UP ngay sau khi reset
+    setTimeout(() => {
+      justResetRef.current = false;
+    }, 1000);
   }, [dispatch]);
 
   // Effect để xử lý việc reset timer khi level thay đổi hoặc reset được kích hoạt
   useEffect(() => {
     // Đặt lại thời gian ban đầu khi level thay đổi hoặc timer được reset
     setTimeRemaining(GAME_CONSTANTS.LEVEL_TIME_LIMITS);
+    timeRemainingRef.current = GAME_CONSTANTS.LEVEL_TIME_LIMITS;
+    justResetRef.current = true; // Đánh dấu timer vừa được reset
+
+    // Đặt lại cờ sau 1 giây để tránh kích hoạt TIME_UP ngay sau khi reset
+    setTimeout(() => {
+      justResetRef.current = false;
+    }, 1000);
   }, [level, timerResetTrigger]);
 
   // Effect riêng biệt để xử lý đếm ngược
@@ -44,12 +61,9 @@ export const useTimer = () => {
         // Kiểm tra lại trạng thái tạm dừng mới nhất trước khi cập nhật thời gian
         if (!isPausedRef.current) {
           setTimeRemaining(prev => {
-            if (prev <= 1) {
-              // Khi hết thời gian, thông báo cho game biết
-              dispatch({ type: ActionTypes.TIME_UP });
-              return 0;
-            }
-            return prev - 1;
+            const newValue = prev - 1;
+            timeRemainingRef.current = newValue > 0 ? newValue : 0;
+            return timeRemainingRef.current;
           });
         }
       }, 1000);
@@ -59,7 +73,16 @@ export const useTimer = () => {
     return () => {
       if (timerId) clearInterval(timerId);
     };
-  }, [isPaused, dispatch]);
+  }, [isPaused]);
+
+  // Thêm effect riêng để xử lý khi hết thời gian
+  useEffect(() => {
+    // Chỉ kích hoạt TIME_UP khi thời gian = 0, không bị tạm dừng và không phải vừa reset timer
+    if (timeRemaining === 0 && !isPaused && !justResetRef.current) {
+      // Gọi dispatch trong effect riêng biệt thay vì trong hàm setter
+      dispatch({ type: ActionTypes.TIME_UP });
+    }
+  }, [timeRemaining, isPaused, dispatch]);
 
   /**
    * Chuyển đổi thời gian từ giây sang định dạng mm:ss

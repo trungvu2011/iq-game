@@ -170,17 +170,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         isPaused: true,
       };
 
-    case ActionTypes.HIDE_LEVEL_FAILED:
-      return {
-        ...state,
-        showLevelFailed: false,
-        isPaused: false,
-        currentQuestion: 1,
-        questionIndex: 0,
-        correctAnswersInLevel: 0,
-        timerResetTrigger: !state.timerResetTrigger,
-      };
-
     case ActionTypes.SET_GAME_COMPLETED:
       return {
         ...state,
@@ -192,6 +181,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         ...initialState,
         level: state.level,
         currentPattern: generatePatternForLevel(state.level, 0),
+        timerResetTrigger: !state.timerResetTrigger,
+        showLevelFailed: false,
       };
 
     case ActionTypes.TIME_UP:

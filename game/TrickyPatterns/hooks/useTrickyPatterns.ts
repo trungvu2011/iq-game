@@ -6,13 +6,14 @@ import { useGameControl } from './game/useGameControl';
 import { useModalController } from './ui/useModalController';
 import { useGameContext } from '../context/GameContext';
 import { GAME_CONSTANTS } from '../constants/gameConstants';
+import { ActionTypes } from '../types/gameTypes';
 
 /**
  * Hook chính quản lý trạng thái game TrickyPatterns
  * Kết hợp các custom hook nhỏ hơn để quản lý các tính năng khác nhau
  */
 export const useTrickyPatterns = () => {
-  const { state } = useGameContext();
+  const { state, dispatch } = useGameContext();
 
   // Sử dụng các custom hook đã tạo
   const patternGenerator = usePatternGenerator();
@@ -48,7 +49,8 @@ export const useTrickyPatterns = () => {
    * Xử lý khi level thất bại
    */
   const handleLevelFailed = () => {
-    levelManager.failLevel();
+    // Reset the level which will also set showLevelFailed to false
+    dispatch({ type: ActionTypes.RESET_LEVEL });
   };
 
   /**

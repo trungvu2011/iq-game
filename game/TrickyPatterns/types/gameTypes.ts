@@ -66,7 +66,6 @@ export enum ActionTypes {
   SHOW_LEVEL_COMPLETE = 'SHOW_LEVEL_COMPLETE',
   HIDE_LEVEL_COMPLETE = 'HIDE_LEVEL_COMPLETE',
   SHOW_LEVEL_FAILED = 'SHOW_LEVEL_FAILED',
-  HIDE_LEVEL_FAILED = 'HIDE_LEVEL_FAILED',
   SET_GAME_COMPLETED = 'SET_GAME_COMPLETED',
   LEVEL_UP = 'LEVEL_UP',
   RESET_LEVEL = 'RESET_LEVEL',
@@ -88,7 +87,6 @@ export type GameAction =
   | { type: ActionTypes.SHOW_LEVEL_COMPLETE }
   | { type: ActionTypes.HIDE_LEVEL_COMPLETE }
   | { type: ActionTypes.SHOW_LEVEL_FAILED }
-  | { type: ActionTypes.HIDE_LEVEL_FAILED }
   | { type: ActionTypes.SET_GAME_COMPLETED; payload: boolean }
   | { type: ActionTypes.LEVEL_UP }
   | { type: ActionTypes.RESET_LEVEL }

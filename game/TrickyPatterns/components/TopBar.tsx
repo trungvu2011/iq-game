@@ -1,9 +1,12 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useTimer } from '../hooks/game/useTimer';
 import HelpModal from './HelpModal';
 import { useGameContext } from '../context/GameContext';
 import { ActionTypes } from '../types/gameTypes';
+import PlayIcon from '../../../commons/icons/PlayIcon';
+import PauseIcon from '../../../commons/icons/PauseIcon';
+import QuestionIcon from '../../../commons/icons/QuestionIcon';
 
 // Lấy chiều rộng màn hình
 const screenWidth = Dimensions.get('window').width;
@@ -25,24 +28,6 @@ interface TopBarProps {
     formattedTime?: string;
     timePercentage?: number;
 }
-
-/**
- * Component IconButton - Nút biểu tượng trong thanh trạng thái
- */
-const IconButton = ({
-    icon,
-    onPress
-}: {
-    icon: string,
-    onPress: () => void
-}) => (
-    <TouchableOpacity
-        style={styles.iconButton}
-        onPress={onPress}
-    >
-        <Text style={styles.iconText}>{icon}</Text>
-    </TouchableOpacity>
-);
 
 /**
  * Component InfoItem - Hiển thị một mục thông tin trong thanh trạng thái
@@ -86,11 +71,21 @@ const Timer = ({
     const [seconds, setSeconds] = useState(timeRemaining || 60);
     // Trạng thái hoạt động của bộ đếm thời gian
     const [timerActive, setTimerActive] = useState(true);
+    // Ref để theo dõi khi nào cần gọi onTimeUp
+    const shouldCallTimeUp = useRef(false);
 
     // Cập nhật trạng thái hoạt động khi isPaused thay đổi
     useEffect(() => {
         setTimerActive(!isPaused);
     }, [isPaused]);
+
+    // Effect riêng để gọi onTimeUp ngoài quá trình render
+    useEffect(() => {
+        if (shouldCallTimeUp.current) {
+            onTimeUp();
+            shouldCallTimeUp.current = false;
+        }
+    }, [seconds, onTimeUp]);
 
     // Quản lý bộ đếm thời gian
     useEffect(() => {
@@ -103,8 +98,8 @@ const Timer = ({
                     if (newSeconds <= 0) {
                         // Xóa interval khi hết thời gian
                         clearInterval(interval);
-                        // Gọi callback khi hết thời gian
-                        onTimeUp();
+                        // Đánh dấu để gọi onTimeUp trong effect riêng biệt
+                        shouldCallTimeUp.current = true;
                         return 0;
                     }
                     return newSeconds;
@@ -115,7 +110,7 @@ const Timer = ({
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [timerActive, onTimeUp]);
+    }, [timerActive]);
 
     // Đặt lại bộ đếm thời gian khi cấp độ thay đổi
     useEffect(() => {
@@ -174,10 +169,15 @@ const TopBar = ({
     return (
         <View style={styles.container}>
             {/* Trái: Nút tạm dừng */}
-            <IconButton
-                icon={isPaused ? "▶️" : "⏸️"}
+            <TouchableOpacity
+                style={styles.iconButton}
                 onPress={onPause}
-            />
+            >
+                {isPaused ?
+                    <PlayIcon width={20} height={20} /> : // Nếu đang tạm dừng, hiển thị biểu tượng Play
+                    <PauseIcon width={20} height={20} />  // Nếu không, hiển thị biểu tượng Pause
+                }
+            </TouchableOpacity>
 
             {/* Giữa: Khu vực thông tin */}
             <View style={styles.infoContainer}>
@@ -192,17 +192,23 @@ const TopBar = ({
                 />
 
                 {/* Tiến trình câu hỏi */}
-                <InfoItem value={`${displayQuestion}/${totalQuestions}`} />
+                <InfoItem
+                    value={`${displayQuestion}/${totalQuestions}`}
+                />
 
                 {/* Điểm số */}
-                <InfoItem value={score} />
+                <InfoItem
+                    value={score}
+                />
             </View>
 
             {/* Phải: Nút trợ giúp */}
-            <IconButton
-                icon="❓"
-                onPress={handleShowHelpModal}
-            />
+            <TouchableOpacity
+                style={styles.iconButton}
+                onPress={handleShowHelpModal} // Mở modal trợ giúp
+            >
+                <QuestionIcon width={20} height={20} />
+            </TouchableOpacity>
 
             {/* Modal trợ giúp - sẽ sử dụng ref từ GameContext */}
             <HelpModal
@@ -219,31 +225,30 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        backgroundColor: '#2d1b56', // tím đậm
         paddingVertical: 10,
         paddingHorizontal: 16,
         width: screenWidth,
     },
     // Nút biểu tượng
     iconButton: {
-        width: 40,
-        height: 40,
+        width: 35,
+        height: 35,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
-        backgroundColor: '#322a4f', // tím nhạt
-    },
-    // Text biểu tượng
-    iconText: {
-        fontSize: 20,
-        color: 'white',
+        backgroundColor: '#62588a',
     },
     // Container khu vực thông tin
     infoContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         flex: 1,
-        gap: 20,
+        gap: 40,
+        backgroundColor: '#2f2557',
+        marginLeft: 30,
+        marginRight: 30,
+        borderRadius: 10,
+        paddingVertical: 3,
     },
     // Mục thông tin
     infoItem: {

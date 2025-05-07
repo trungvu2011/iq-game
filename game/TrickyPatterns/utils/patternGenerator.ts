@@ -168,10 +168,17 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
     const gridA = placeRandomDots(gridSize, numDots);
     const colorMapA: Record<string, Color> = {};
 
+    // Với configIndex = 0, tất cả chấm sẽ có cùng một màu
+    let singleColor: Color | null = null;
+    if (configIndex === 0) {
+        singleColor = randomColor();
+    }
+
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
             if (gridA[i][j] === 1) {
-                colorMapA[`${i},${j}`] = randomColor();
+                // Nếu configIndex = 0, dùng màu đã chọn, ngược lại chọn màu ngẫu nhiên cho mỗi chấm
+                colorMapA[`${i},${j}`] = configIndex === 0 ? singleColor! : randomColor();
             }
         }
     }
@@ -206,16 +213,29 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
             const removePos = dots[removeIndex];
 
             // Tìm các vị trí lân cận có thể di chuyển đến
-            const neighbors: [number, number][] = [
-                [removePos[0] - 1, removePos[1]],
-                [removePos[0] + 1, removePos[1]],
-                [removePos[0], removePos[1] - 1],
-                [removePos[0], removePos[1] + 1],
-                [removePos[0] - 1, removePos[1] - 1],
-                [removePos[0] - 1, removePos[1] + 1],
-                [removePos[0] + 1, removePos[1] - 1],
-                [removePos[0] + 1, removePos[1] + 1],
-            ].filter(([i, j]) => i >= 0 && j >= 0 && i < gridSize && j < gridSize && gridA[i][j] === 0) as [number, number][];
+            let neighbors: [number, number][];
+
+            // Nếu configIndex = 0, chỉ cho phép di chuyển theo chiều dọc và ngang (không đường chéo)
+            if (configIndex === 0) {
+                neighbors = [
+                    [removePos[0] - 1, removePos[1]], // lên
+                    [removePos[0] + 1, removePos[1]], // xuống
+                    [removePos[0], removePos[1] - 1], // trái
+                    [removePos[0], removePos[1] + 1], // phải
+                ].filter(([i, j]) => i >= 0 && j >= 0 && i < gridSize && j < gridSize && gridA[i][j] === 0) as [number, number][];
+            } else {
+                // Các cấp độ khác cho phép di chuyển theo cả đường chéo
+                neighbors = [
+                    [removePos[0] - 1, removePos[1]], // lên
+                    [removePos[0] + 1, removePos[1]], // xuống
+                    [removePos[0], removePos[1] - 1], // trái
+                    [removePos[0], removePos[1] + 1], // phải
+                    [removePos[0] - 1, removePos[1] - 1], // chéo trên trái
+                    [removePos[0] - 1, removePos[1] + 1], // chéo trên phải
+                    [removePos[0] + 1, removePos[1] - 1], // chéo dưới trái
+                    [removePos[0] + 1, removePos[1] + 1], // chéo dưới phải
+                ].filter(([i, j]) => i >= 0 && j >= 0 && i < gridSize && j < gridSize && gridA[i][j] === 0) as [number, number][];
+            }
 
             if (neighbors.length > 0) {
                 // Chọn ngẫu nhiên một vị trí lân cận để đặt chấm
@@ -233,7 +253,7 @@ export function generatePatternForLevel(level: number, questionIndex: number = 0
 
                 // Cập nhật map màu
                 colorMapB = { ...colorMapA };
-                const color = colorMapA[`${removePos[0]},${removePos[1]}`] || randomColor();
+                const color = colorMapA[`${removePos[0]},${removePos[1]}`] || (configIndex === 0 ? singleColor! : randomColor());
                 delete colorMapB[`${removePos[0]},${removePos[1]}`];
                 colorMapB[`${addPos[0]},${addPos[1]}`] = color;
             } else {
