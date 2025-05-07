@@ -62,10 +62,12 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
                 }}
                 style={[
                     {
-                        padding: 8,
+                        padding: 10,
                         position: 'absolute',
-                        right: 15,
-                        top: StatusBar.currentHeight || 0,
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
                         backgroundColor: '#00000090',
                         width: '100%',
                         height: '100%',

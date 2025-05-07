@@ -173,10 +173,7 @@ const TopBar = ({
                 style={styles.iconButton}
                 onPress={onPause}
             >
-                {isPaused ?
-                    <PlayIcon width={20} height={20} /> : // Nếu đang tạm dừng, hiển thị biểu tượng Play
-                    <PauseIcon width={20} height={20} />  // Nếu không, hiển thị biểu tượng Pause
-                }
+                <PauseIcon width={20} height={20} />  // Nếu không, hiển thị biểu tượng Pause
             </TouchableOpacity>
 
             {/* Giữa: Khu vực thông tin */}
@@ -225,8 +222,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
+        padding: 10,
         width: screenWidth,
     },
     // Nút biểu tượng

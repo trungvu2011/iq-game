@@ -14,23 +14,23 @@ const AnswerButtons = ({ onAnswer, disabled }: AnswerButtonsProps) => {
         <View style={styles.buttonContainer}>
             {/* Wrong Button (NO) */}
             <TouchableOpacity
-                style={[styles.answerButton, styles.wrongButton]}
+                style={[styles.answerButton]}
                 onPress={() => onAnswer(false)}
                 disabled={disabled}
             >
-                <Text style={styles.wrongButtonText}>
-                    NO
+                <Text style={styles.buttonText}>
+                    No
                 </Text>
             </TouchableOpacity>
 
             {/* Correct Button (YES) */}
             <TouchableOpacity
-                style={[styles.answerButton, styles.correctButton]}
+                style={[styles.answerButton]}
                 onPress={() => onAnswer(true)}
                 disabled={disabled}
             >
-                <Text style={styles.correctButtonText}>
-                    YES
+                <Text style={styles.buttonText}>
+                    Yes
                 </Text>
             </TouchableOpacity>
         </View>
@@ -57,21 +57,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5,
+        backgroundColor: '#221c40',
     },
-    wrongButton: {
-        backgroundColor: '#d32f2f',
-    },
-    wrongButtonText: {
+    buttonText: {
         fontSize: 40,
-        color: '#FFFFFF',
-        fontWeight: 'bold',
-    },
-    correctButton: {
-        backgroundColor: '#388e3c',
-    },
-    correctButtonText: {
-        fontSize: 40,
-        color: '#FFFFFF',
+        color: '#ffffffff',
         fontWeight: 'bold',
     },
 });
