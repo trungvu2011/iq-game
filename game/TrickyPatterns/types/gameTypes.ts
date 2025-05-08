@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import { BaseModalRefType } from '../../../commons/BaseModal';
+import { BaseModalRefType } from '../../../components/BaseModal';
 
 /**
  * Kiểu dữ liệu cho mẫu pattern của game

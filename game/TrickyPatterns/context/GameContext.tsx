@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, RefObject, useRef } from 'react';
 import { gameReducer, initialState } from '../state/gameReducer';
 import { GameState, GameAction } from '../types/gameTypes';
-import { BaseModalRefType } from '../../../commons/BaseModal';
+import { BaseModalRefType } from '../../../components/BaseModal';
 
 /**
  * Props cho GameContext Provider

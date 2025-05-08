@@ -1,9 +1,9 @@
 import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text } from 'react-native'
 import React from 'react'
-import TopBar from './components/TopBar'
+import TopBar from '../../components/TopBar'
 import AnswerButtons from './components/AnswerButtons'
-import PauseModal from './components/PauseModal'
-import GameMessage from './components/GameMessage'
+import PauseModal from '../../components/PauseModal'
+import GameMessage from '../../components/GameMessage'
 import PatternComparison from './components/PatternComparison'
 import { useTrickyPatterns } from './hooks/useTrickyPatterns'
 import { GameContextProvider } from './context/GameContext'
@@ -64,7 +64,6 @@ const TrickyPatternsContent = () => {
                         score={gameState.levelScore}
                         correctAnswers={gameState.correctAnswersInLevel}
                         wrongAnswers={gameState.wrongAnswersInLevel}
-                        totalAttempts={gameState.totalAttempts}
                         onAction={gameState.handleGameComplete}
                         maxLevel={gameState.maxLevel}
                     />
@@ -76,7 +75,6 @@ const TrickyPatternsContent = () => {
                         score={gameState.levelScore}
                         correctAnswers={gameState.correctAnswersInLevel}
                         wrongAnswers={gameState.wrongAnswersInLevel}
-                        totalAttempts={gameState.totalAttempts}
                         onAction={gameState.handleLevelComplete}
                         maxLevel={gameState.maxLevel}
                     />
@@ -88,7 +86,6 @@ const TrickyPatternsContent = () => {
                         score={gameState.levelScore}
                         correctAnswers={gameState.correctAnswersInLevel}
                         wrongAnswers={gameState.wrongAnswersInLevel}
-                        totalAttempts={gameState.totalAttempts}
                         onAction={gameState.handleLevelFailed}
                         maxLevel={gameState.maxLevel}
                     />

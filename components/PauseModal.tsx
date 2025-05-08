@@ -7,11 +7,11 @@ import {
     ViewStyle,
     Dimensions,
 } from 'react-native';
-import BaseModal, { BaseModalRefType } from '../../../commons/BaseModal';
-import PlayIcon from '../../../commons/icons/PlayIcon';
-import RestartIcon from '../../../commons/icons/RestartIcon';
-import QuestionIcon from '../../../commons/icons/QuestionIcon';
-import LeaveIcon from '../../../commons/icons/LeaveIcon';
+import BaseModal, { BaseModalRefType } from './BaseModal';
+import PlayIcon from '../assets/icons/PlayIcon';
+import RestartIcon from '../assets/icons/RestartIcon';
+import QuestionIcon from '../assets/icons/QuestionIcon';
+import LeaveIcon from '../assets/icons/LeaveIcon';
 
 interface PauseModalProps {
     onContinue: () => void;
@@ -19,17 +19,18 @@ interface PauseModalProps {
     onHowToPlay: () => void;
     onLeaveGame: () => void;
     modelStyle?: ViewStyle;
+    backgroundColor?: string;
 }
 
 const PauseModal = forwardRef<BaseModalRefType, PauseModalProps>(
-    ({ onContinue, onRestart, onHowToPlay, onLeaveGame, modelStyle }, ref) => {
+    ({ onContinue, onRestart, onHowToPlay, onLeaveGame, modelStyle, backgroundColor }, ref) => {
         return (
             <BaseModal
                 ref={ref}
                 modelStyle={modelStyle}
                 showCloseButton={false}
                 bodyStyle={{
-                    backgroundColor: '#FFFFFF',
+                    backgroundColor: backgroundColor,
                     width: '100%',
                     height: '100%',
                     alignItems: 'center',
@@ -92,8 +93,7 @@ const styles = StyleSheet.create({
         height: '100%',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#3d2e6f',
-        padding: 20,
+        padding: 30,
     },
     buttonContainer: {
         width: '100%',

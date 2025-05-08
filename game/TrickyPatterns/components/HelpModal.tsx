@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native'
 import React, { forwardRef } from 'react'
-import BaseModal, { BaseModalRefType } from '../../../commons/BaseModal'
+import BaseModal, { BaseModalRefType } from '../../../components/BaseModal'
 
 interface HelpModalProps {
     onClose: () => void;

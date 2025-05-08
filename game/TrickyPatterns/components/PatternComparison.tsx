@@ -1,6 +1,8 @@
 import { View, StyleSheet, Text } from 'react-native'
 import React from 'react'
 import PatternGrid from './PatternGrid'
+import CorrectIcon from '../../../assets/icons/CorrectIcon';
+import WrongIcon from '../../../assets/icons/WrongIcon';
 
 interface PatternComparisonProps {
     pattern1: string[][];
@@ -27,16 +29,11 @@ const PatternComparison = ({
             {/* Result icon shown in the middle between the grids */}
             {showResult && (
                 <View style={styles.resultIconContainer}>
-                    <View style={[
-                        styles.resultIconBackground,
-                        { backgroundColor: isCorrectAnswer ? 'rgba(76, 175, 80, 0.8)' : 'rgba(244, 67, 54, 0.8)' }
-                    ]}>
-                        <Text style={[
-                            styles.resultIcon,
-                            { color: '#FFFFFF' }
-                        ]}>
-                            {isCorrectAnswer ? '✓' : '✗'}
-                        </Text>
+                    <View>
+                        {isCorrectAnswer ?
+                            <CorrectIcon width={60} height={60} /> :
+                            <WrongIcon width={60} height={60} />
+                        }
                     </View>
                 </View>
             )}
@@ -83,24 +80,6 @@ const styles = StyleSheet.create({
         zIndex: 10,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    // Circular background for the icon
-    resultIconBackground: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
-    },
-    // Result icon style
-    resultIcon: {
-        fontSize: 40,
-        fontWeight: 'bold',
     },
 });
 

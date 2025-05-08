@@ -1,12 +1,8 @@
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
-import { useTimer } from '../hooks/game/useTimer';
-import HelpModal from './HelpModal';
-import { useGameContext } from '../context/GameContext';
-import { ActionTypes } from '../types/gameTypes';
-import PlayIcon from '../../../commons/icons/PlayIcon';
-import PauseIcon from '../../../commons/icons/PauseIcon';
-import QuestionIcon from '../../../commons/icons/QuestionIcon';
+import PauseIcon from '../assets/icons/PauseIcon';
+import QuestionIcon from '../assets/icons/QuestionIcon';
+import { BaseModalRefType } from './BaseModal';
 
 // Lấy chiều rộng màn hình
 const screenWidth = Dimensions.get('window').width;
@@ -27,48 +23,62 @@ interface TopBarProps {
     timeRemaining?: number;
     formattedTime?: string;
     timePercentage?: number;
+    // Modal refs for external control
+    helpModalRef?: React.RefObject<BaseModalRefType>;
+    pauseModalRef?: React.RefObject<BaseModalRefType>;
+    // Styling
+    textColor?: string;
+    showTimer?: boolean;
+    showQuestions?: boolean;
+    showScore?: boolean;
+    showHelpButton?: boolean;
+    showPauseButton?: boolean;
 }
 
 /**
  * Component InfoItem - Hiển thị một mục thông tin trong thanh trạng thái
  */
 const InfoItem = ({
-    value
+    value,
+    textColor = 'white'
 }: {
-    value: string | number
+    value: string | number,
+    textColor?: string
 }) => (
     <View style={styles.infoItem}>
-        <Text style={styles.infoValue}>{value}</Text>
+        <Text style={[styles.infoValue, { color: textColor }]}>{value}</Text>
     </View>
 );
 
 /**
  * Component Timer - Quản lý và hiển thị thời gian còn lại
- * Có thể sử dụng giá trị từ hook useTimer hoặc tự quản lý state
  */
 const Timer = ({
-    isPaused,
-    shouldReset,
-    level,
-    onTimeUp,
+    isPaused = false,
+    shouldReset = false,
+    level = 1,
+    onTimeUp = () => { },
     timeRemaining,
-    formattedTime
+    formattedTime,
+    textColor = 'white'
 }: {
-    isPaused: boolean,
-    shouldReset: boolean,
-    level: number,
-    onTimeUp: () => void,
+    isPaused?: boolean,
+    shouldReset?: boolean,
+    level?: number,
+    onTimeUp?: () => void,
     timeRemaining?: number,
-    formattedTime?: string
+    formattedTime?: string,
+    textColor?: string
 }) => {
+    // console.log("timer render")
     // Nếu có formattedTime được truyền vào, sử dụng giá trị đó
     if (formattedTime) {
-        return <InfoItem value={formattedTime} />;
+        return <InfoItem value={formattedTime} textColor={textColor} />;
     }
 
     // Nếu không có formattedTime, sử dụng logic cũ
     // Thời gian còn lại (giây)
-    const [seconds, setSeconds] = useState(timeRemaining || 60);
+    const [seconds, setSeconds] = useState(timeRemaining || 60); // Default to 60 if timeRemaining is undefined
     // Trạng thái hoạt động của bộ đếm thời gian
     const [timerActive, setTimerActive] = useState(true);
     // Ref để theo dõi khi nào cần gọi onTimeUp
@@ -78,6 +88,14 @@ const Timer = ({
     useEffect(() => {
         setTimerActive(!isPaused);
     }, [isPaused]);
+
+    // Cập nhật khi hết giờ
+    useEffect(() => {
+        if (seconds <= 0) {
+            setTimerActive(false);
+            onTimeUp();
+        }
+    }, [seconds, onTimeUp]);
 
     // Effect riêng để gọi onTimeUp ngoài quá trình render
     useEffect(() => {
@@ -102,6 +120,7 @@ const Timer = ({
                         shouldCallTimeUp.current = true;
                         return 0;
                     }
+                    // console.log('seconds', newSeconds);
                     return newSeconds;
                 });
             }, 1000);
@@ -114,10 +133,10 @@ const Timer = ({
 
     // Đặt lại bộ đếm thời gian khi cấp độ thay đổi
     useEffect(() => {
-        setSeconds(60); // Đặt lại thời gian là 60 giây cho cấp độ mới
+        setSeconds(timeRemaining || 60); // Đặt lại thời gian với fallback 60 giây
         // Đảm bảo bộ đếm thời gian hoạt động khi đặt lại
         setTimerActive(true);
-    }, [level, shouldReset]);
+    }, [level, shouldReset, timeRemaining]);
 
     /**
      * Định dạng thời gian thành chuỗi MM:SS
@@ -128,11 +147,12 @@ const Timer = ({
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    return <InfoItem value={formatTime(seconds)} />;
+    return <InfoItem value={formatTime(seconds || 0)} textColor={textColor} />;
 };
 
 /**
  * Component TopBar - Hiển thị thanh trạng thái trên cùng của game
+ * Có thể tái sử dụng cho tất cả các game
  */
 const TopBar = ({
     totalQuestions = 7,
@@ -143,80 +163,102 @@ const TopBar = ({
     onHelp = () => { },
     onTimeUp = () => { },
     shouldResetTimer = false,
+    isPaused = false,
+    timeRemaining,
+    formattedTime,
+    helpModalRef,
+    pauseModalRef,
+    textColor = 'white',
+    showTimer = true,
+    showQuestions = true,
+    showScore = true,
+    showHelpButton = true,
+    showPauseButton = true,
 }: TopBarProps) => {
     // Đảm bảo currentQuestion không vượt quá totalQuestions khi hiển thị
     const displayQuestion = Math.min(currentQuestion, totalQuestions);
 
-    // Lấy modalRefs và dispatch từ GameContext để sử dụng chung với các hoạt động khác
-    const { modalRefs, dispatch } = useGameContext();
-
-    // Sử dụng hook useTimer
-    const { timeRemaining, formattedTime, resetTimer, isPaused } = useTimer();
-
-    // Hiển thị modal trợ giúp và tạm dừng game
-    const handleShowHelpModal = () => {
-        modalRefs.helpModalRef.current?.show();
-        dispatch({ type: ActionTypes.PAUSE_GAME }); // Đảm bảo game tạm dừng khi mở help modal
-        onHelp(); // Gọi callback từ props để thực hiện các tác vụ bổ sung
+    // Xử lý khi nhấn nút pause
+    const handlePause = () => {
+        if (pauseModalRef?.current) {
+            pauseModalRef.current.show();
+        }
+        onPause();
     };
 
-    // Xử lý đóng modal help và tiếp tục đếm thời gian
-    const handleCloseHelpModal = () => {
-        modalRefs.helpModalRef.current?.hide();
-        dispatch({ type: ActionTypes.CONTINUE_GAME }); // Đảm bảo game tiếp tục sau khi đóng modal
+    // Xử lý khi nhấn nút help
+    const handleHelp = () => {
+        if (helpModalRef?.current) {
+            helpModalRef.current.show();
+        }
+        onHelp();
     };
 
     return (
-        <View style={styles.container}>
-            {/* Trái: Nút tạm dừng */}
-            <TouchableOpacity
-                style={styles.iconButton}
-                onPress={onPause}
-            >
-                <PauseIcon width={20} height={20} />  // Nếu không, hiển thị biểu tượng Pause
-            </TouchableOpacity>
+        <View style={styles.outerContainer}>
+            <View style={styles.container}>
+                {/* Trái: Nút tạm dừng */}
+                {showPauseButton && (
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={handlePause}
+                    >
+                        <PauseIcon width={20} height={20} />
+                    </TouchableOpacity>
+                )}
 
-            {/* Giữa: Khu vực thông tin */}
-            <View style={styles.infoContainer}>
-                {/* Bộ đếm thời gian */}
-                <Timer
-                    isPaused={isPaused}
-                    shouldReset={shouldResetTimer}
-                    level={level}
-                    onTimeUp={onTimeUp}
-                    timeRemaining={timeRemaining}
-                    formattedTime={formattedTime}
-                />
+                {/* Giữa: Khu vực thông tin */}
+                <View style={styles.infoContainer}>
+                    {/* Bộ đếm thời gian */}
+                    {showTimer && (
+                        <Timer
+                            isPaused={isPaused}
+                            shouldReset={shouldResetTimer}
+                            level={level}
+                            onTimeUp={onTimeUp}
+                            timeRemaining={timeRemaining}
+                            formattedTime={formattedTime}
+                            textColor={textColor}
+                        />
+                    )}
 
-                {/* Tiến trình câu hỏi */}
-                <InfoItem
-                    value={`${displayQuestion}/${totalQuestions}`}
-                />
+                    {/* Tiến trình câu hỏi */}
+                    {showQuestions && (
+                        <InfoItem
+                            value={`${displayQuestion}/${totalQuestions}`}
+                            textColor={textColor}
+                        />
+                    )}
 
-                {/* Điểm số */}
-                <InfoItem
-                    value={score}
-                />
+                    {/* Điểm số */}
+                    {showScore && (
+                        <InfoItem
+                            value={score}
+                            textColor={textColor}
+                        />
+                    )}
+                </View>
+
+                {/* Phải: Nút trợ giúp */}
+                {showHelpButton && (
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={handleHelp}
+                    >
+                        <QuestionIcon width={20} height={20} />
+                    </TouchableOpacity>
+                )}
             </View>
-
-            {/* Phải: Nút trợ giúp */}
-            <TouchableOpacity
-                style={styles.iconButton}
-                onPress={handleShowHelpModal} // Mở modal trợ giúp
-            >
-                <QuestionIcon width={20} height={20} />
-            </TouchableOpacity>
-
-            {/* Modal trợ giúp - sẽ sử dụng ref từ GameContext */}
-            <HelpModal
-                ref={modalRefs.helpModalRef}
-                onClose={handleCloseHelpModal}
-            />
         </View>
     )
 }
 
 const styles = StyleSheet.create({
+    // Outer container để căn giữa hoàn toàn
+    outerContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     // Container chính
     container: {
         flexDirection: 'row',
@@ -232,7 +274,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 20,
-        backgroundColor: '#62588a',
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
     },
     // Container khu vực thông tin
     infoContainer: {
@@ -240,11 +282,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         flex: 1,
         gap: 40,
-        backgroundColor: '#2f2557',
         marginLeft: 30,
         marginRight: 30,
-        borderRadius: 10,
         paddingVertical: 3,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        borderRadius: 20,
     },
     // Mục thông tin
     infoItem: {
@@ -255,7 +297,6 @@ const styles = StyleSheet.create({
     infoValue: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: 'white',
         textAlign: 'center',
     },
 });

@@ -1,17 +1,12 @@
 // filepath: d:\iq-game\game\MathAudit\components\GameMessage.tsx
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-
-// Lấy kích thước màn hình
-const { width: screenWidth } = Dimensions.get('window');
-
 interface GameMessageProps {
     type: 'complete' | 'failed' | 'gameover';
     level: number;
     score: number;
     correctAnswers: number;
     wrongAnswers: number;
-    totalAttempts: number;
     onAction: () => void;
     maxLevel: number;
 }
@@ -25,13 +20,14 @@ const GameMessage = ({
     score,
     correctAnswers,
     wrongAnswers,
-    totalAttempts,
     onAction,
     maxLevel
 }: GameMessageProps) => {
 
     // Tính tỷ lệ thành công
-    const successRate = totalAttempts > 0 ? Math.round((correctAnswers / totalAttempts) * 100) : 0;
+    let successRate = Math.round((correctAnswers / (correctAnswers + wrongAnswers)) * 100);
+    successRate = isNaN(successRate) ? 0 : successRate;
+
 
     // Xác định nội dung tiêu đề và nút hành động dựa vào loại thông báo
     const getTitleAndButton = () => {
@@ -104,6 +100,8 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         width: '85%',
         maxWidth: 500,
+        alignSelf: 'center', // Center horizontally
+        marginVertical: 'auto', // Center vertically in available space
     },
     // Tiêu đề thông báo
     titleText: {

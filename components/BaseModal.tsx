@@ -48,7 +48,7 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
             transparent={transparent}
             visible={showModal}
             statusBarTranslucent
-            animationType='fade'
+            animationType='slide'
             onRequestClose={
                 onRequestClose ? onRequestClose : () => setShowModal(false)
             }
@@ -62,13 +62,7 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
                 }}
                 style={[
                     {
-                        padding: 10,
                         position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: '#00000090',
                         width: '100%',
                         height: '100%',
                         alignItems: 'center',
@@ -79,20 +73,7 @@ const BaseModal = forwardRef<BaseModalRefType, BaseModalProps>(({
                 ]}>
                 <View
                     onTouchEnd={(e) => e.stopPropagation()}
-                    style={[
-                        {
-                            minHeight: 100,
-                            padding: 20,
-                            borderRadius: 10,
-                            width: '80%',
-                            maxWidth: 400,
-                            alignSelf: 'center',
-                        },
-                        bodyStyle,
-                        !transparent && {
-                            backgroundColor: '#FFFFFF',
-                        },
-                    ]}
+                    style={bodyStyle}
                     {...bodyProps}>
                     {showCloseButton && (
                         <TouchableOpacity
