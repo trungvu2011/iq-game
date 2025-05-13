@@ -1,27 +1,59 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
 import PaperClip from '../icon/PaperClip';
-import { FOOD_LIST } from '../constant/gameConstant';
+import { FOOD_LIST } from '../constant';
 
 interface BoardProps {
   items: number[];
 }
 
+interface AnimatedItemProps {
+  item: number;
+  index: number;
+}
+
+const AnimatedItem = ({ item, index }: AnimatedItemProps) => {
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.5);
+
+  useEffect(() => {
+    opacity.value = withDelay(index * 150, withTiming(1, { duration: 200 }));
+    scale.value = withDelay(index * 150, withTiming(1, { duration: 200 }));
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View style={[animatedStyle]}>
+      <Text style={styles.foodItem}>{FOOD_LIST[item]}</Text>
+    </Animated.View>
+  );
+};
+
 const Board = ({ items }: BoardProps) => {
   return (
     <View
-      style={[styles.container,
-      {
-        width: items.length > 4 ? 250 : 200,
-        height: items.length > 4 ? 200 : 150,
-      }]}
+      style={[
+        styles.container,
+        {
+          width: items.length > 4 ? 250 : 200,
+          height: items.length > 4 ? 200 : 150,
+        },
+      ]}
     >
       <PaperClip style={styles.paperclip} />
       <View style={styles.foodItemsContainer}>
-        {items && items.map((item) => (
-          <Text key={item} style={styles.foodItem}>
-            {FOOD_LIST[item]}
-          </Text>
+        {items.map((item, index) => (
+          <AnimatedItem key={`${item}-${index}`} item={item} index={index} />
         ))}
       </View>
     </View>

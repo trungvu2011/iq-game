@@ -2,7 +2,7 @@ import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text, Safe
 import React, { memo, use, useEffect, useRef, useState } from 'react'
 import LevelTopBar from '../../components/LevelTopBar';
 import PauseModal from '../../components/PauseModal';
-import { GAME_CONSTANTS, SCORE_CONFIG } from './constant/gameConstant';
+import { GAME_CONSTANTS, SCORE_CONFIG } from './constant';
 import { BaseModalRefType } from '../../components/BaseModal';
 import RemeberList from './components/RememberList';
 import Shelves from './components/Shelves';
@@ -177,7 +177,7 @@ const ShoppingList = () => {
         return () => clearTimeout(timer);
       }
     } else {
-      indexQuestionRef.current -= 1;
+      indexQuestionRef.current = Math.max(0, indexQuestionRef.current - 1);
       wrongAnswersRef.current += 1;
       if (currentQuestionRef.current > GAME_CONSTANTS.QUESTIONS_TO_COMPLETE_LEVEL) {
         // Chỉ hiển thị level complete nếu đã trả lời đúng đủ số câu hỏi

@@ -1,8 +1,7 @@
-import { FOOD_LIST_CONFIG, FOOD_LIST } from "../constant/gameConstant";
+import { FOOD_LIST_CONFIG, FOOD_LIST } from "../constant/index";
 
 export function generateFoodList(index: number) {
   const foodList = FOOD_LIST_CONFIG[index];
-  console.log("index", index);
   const correctFoodCount = foodList[0];
   const foodCount = foodList[1];
 
