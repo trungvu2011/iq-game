@@ -1,6 +1,6 @@
 import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text } from 'react-native'
 import React from 'react'
-import TopBar from '../../components/TopBar'
+import ProgressTopBar from '../../components/ProgressTopBar'
 import AnswerButtons from './components/AnswerButtons'
 import PauseModal from '../../components/PauseModal'
 import GameMessage from '../../components/GameMessage'
@@ -42,8 +42,8 @@ const TrickyPatternsContent = () => {
     return (
         <View style={styles.container}>
             {/* Thanh trạng thái trên cùng */}
-            <View style={styles.topBarContainer}>
-                <TopBar
+            <View style={styles.ProgressTopBarContainer}>
+                <ProgressTopBar
                     currentQuestion={gameState.currentQuestion}
                     totalQuestions={gameState.totalQuestions}
                     score={gameState.levelScore}
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0,
     },
     // Container cho thanh trạng thái trên cùng
-    topBarContainer: {
+    ProgressTopBarContainer: {
         width: '100%',
         alignItems: 'center',
     },

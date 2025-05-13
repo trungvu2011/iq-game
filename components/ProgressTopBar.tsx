@@ -8,9 +8,9 @@ import { BaseModalRefType } from './BaseModal';
 const screenWidth = Dimensions.get('window').width;
 
 /**
- * Props cho component TopBar
+ * Props cho component ProgressTopBar
  */
-interface TopBarProps {
+interface ProgressTopBarProps {
     totalQuestions?: number;
     currentQuestion?: number;
     score?: number;
@@ -151,10 +151,10 @@ const Timer = ({
 };
 
 /**
- * Component TopBar - Hiển thị thanh trạng thái trên cùng của game
+ * Component ProgressTopBar - Hiển thị thanh trạng thái trên cùng của game
  * Có thể tái sử dụng cho tất cả các game
  */
-const TopBar = ({
+const ProgressTopBar = ({
     totalQuestions = 7,
     currentQuestion = 1,
     score = 0,
@@ -174,7 +174,7 @@ const TopBar = ({
     showScore = true,
     showHelpButton = true,
     showPauseButton = true,
-}: TopBarProps) => {
+}: ProgressTopBarProps) => {
     // Đảm bảo currentQuestion không vượt quá totalQuestions khi hiển thị
     const displayQuestion = Math.min(currentQuestion, totalQuestions);
 
@@ -301,4 +301,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TopBar
+export default ProgressTopBar

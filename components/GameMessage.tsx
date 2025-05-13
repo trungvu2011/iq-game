@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 interface GameMessageProps {
-    type: 'complete' | 'failed' | 'gameover';
+    type: 'complete' | 'failed' | 'gameover' | 'failed2';
     level: number;
     score: number;
     correctAnswers: number;
@@ -46,6 +46,11 @@ const GameMessage = ({
                 return {
                     title: "Chúc mừng!",
                     button: "CHƠI LẠI"
+                };
+            case 'failed2':
+                return {
+                    title: "Bạn đã thất bại!",
+                    button: "THỬ LẠI"
                 };
             default:
                 return {
@@ -124,7 +129,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#4CAF50',
         borderRadius: 10,
         paddingVertical: 10,
-        paddingHorizontal: 20,
         elevation: 3,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },

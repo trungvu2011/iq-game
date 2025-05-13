@@ -4,6 +4,7 @@ import Nonogram from './game/Nonogram/Nonogram';
 import MathAudit from './game/MathAudit/MathAudit';
 import TrickyPatterns from './game/TrickyPatterns/TrickyPatterns';
 import MissingNumber from './game/MissingNumber/MissingNumber';
+import ShoppingList from './game/ShoppingList/ShoppingList';
 
 const App = () => {
   return (
@@ -11,7 +12,8 @@ const App = () => {
       {/* <Nonogram /> */}
       {/* <MathAudit /> */}
       {/* <TrickyPatterns /> */}
-      <MissingNumber />
+      {/* <MissingNumber /> */}
+      <ShoppingList />
     </View>
   );
 };

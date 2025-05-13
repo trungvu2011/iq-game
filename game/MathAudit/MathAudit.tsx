@@ -1,6 +1,6 @@
 import { View, StyleSheet, Platform, StatusBar as RNStatusBar } from 'react-native'
 import React from 'react'
-import TopBar from './components/TopBar'
+import ProgressTopBar from './components/ProgressTopBar'
 import Clipboard from './components/Clipboard'
 import AnswerButtons from './components/AnswerButtons'
 import HelpModal from './components/HelpModal'
@@ -32,8 +32,8 @@ const MathAudit = () => {
     return (
         <View style={styles.container}>
             {/* Thanh trạng thái trên cùng */}
-            <View style={styles.topBarContainer}>
-                <TopBar
+            <View style={styles.ProgressTopBarContainer}>
+                <ProgressTopBar
                     currentQuestion={gameState.currentQuestion}
                     totalQuestions={gameState.totalQuestions}
                     score={gameState.levelScore}
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === 'android' ? RNStatusBar.currentHeight || 0 : 0,
     },
     // Container cho thanh trạng thái trên cùng
-    topBarContainer: {
+    ProgressTopBarContainer: {
         width: '100%',
         alignItems: 'center',
     },

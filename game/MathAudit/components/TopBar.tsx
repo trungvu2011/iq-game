@@ -5,9 +5,9 @@ import React, { useState, useEffect } from 'react'
 const screenWidth = Dimensions.get('window').width;
 
 /**
- * Props cho component TopBar
+ * Props cho component ProgressTopBar
  */
-interface TopBarProps {
+interface ProgressTopBarProps {
     totalQuestions?: number;
     currentQuestion?: number;
     score?: number;
@@ -119,9 +119,9 @@ const Timer = ({
 };
 
 /**
- * Component TopBar - Hiển thị thanh trạng thái trên cùng của game
+ * Component ProgressTopBar - Hiển thị thanh trạng thái trên cùng của game
  */
-const TopBar = ({
+const ProgressTopBar = ({
     totalQuestions = 7,
     currentQuestion = 1,
     score = 0,
@@ -131,7 +131,7 @@ const TopBar = ({
     onTimeUp = () => { },
     shouldResetTimer = false,
     isPaused = false
-}: TopBarProps) => {
+}: ProgressTopBarProps) => {
     return (
         <View style={styles.container}>
             {/* Trái: Nút tạm dừng */}
@@ -219,4 +219,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default TopBar
+export default ProgressTopBar

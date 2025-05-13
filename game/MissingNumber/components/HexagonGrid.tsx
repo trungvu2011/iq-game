@@ -25,7 +25,7 @@ const HexGrid = ({ cols, rows, correctAnswer }: HexGridProps) => {
   const maxHexWidth = availableWidth / ((cols - 1) * 1.5 + 2);
   const maxHexHeight = availableHeight / (rows + 0.5) / Math.sqrt(3);
 
-  const size = Math.min(maxHexWidth, maxHexHeight);
+  const size = Math.min(maxHexWidth, maxHexHeight) - 8;
   const actualSize = size * paddingRatio; // hexagon nhỏ hơn để tạo khoảng trống
 
   const hexWidth = size * 2;
@@ -97,22 +97,6 @@ const HexGrid = ({ cols, rows, correctAnswer }: HexGridProps) => {
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{
-        position: 'absolute',
-        top: startY - 80,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        padding: 10,
-        zIndex: 1,
-        width: '80%',
-        alignSelf: 'center',
-        left: '10%',
-        borderRadius: 8,
-      }}>
-        <Text style={{ color: '#fff', fontSize: 20, textAlign: 'center' }}>
-          Find the missing number in the sequence
-        </Text>
-      </View>
-
       <Svg height={windowHeight} width={windowWidth}>
         {hexes}
       </Svg>

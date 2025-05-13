@@ -1,6 +1,6 @@
 import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Alert, Text } from 'react-native'
 import React, { useRef, useEffect, useState } from 'react'
-import TopBar from '../../components/TopBar'
+import ProgressTopBar from '../../components/ProgressTopBar'
 import PauseModal from '../../components/PauseModal'
 import { BaseModalRefType } from '../../components/BaseModal'
 import HexagonGrid from './components/HexagonGrid'
@@ -247,13 +247,14 @@ const MissingNumber = () => {
 
   return (
     <View style={styles.container}>
-      <TopBar
+      <ProgressTopBar
         currentQuestion={currentQuestionRef.current}
         totalQuestions={GAME_CONSTANTS.QUESTIONS_TO_COMPLETE_LEVEL}
         score={scoreRef.current}
         level={levelRef.current}
         onPause={handleShowPauseModal}
         onTimeUp={handleTimeUp}
+        onHelp={handleHowToPlay}
         shouldResetTimer={resetTimer}
         isPaused={pause || showLevelComplete || showLevelFailed || gameCompleted}
         timeRemaining={GAME_CONSTANTS.LEVEL_TIME_LIMITS}
@@ -285,7 +286,6 @@ const MissingNumber = () => {
         ) : (
           // Main game view
           <>
-
             <View style={styles.gridContainer}>
               <HexagonGrid
                 key={renderKey}
